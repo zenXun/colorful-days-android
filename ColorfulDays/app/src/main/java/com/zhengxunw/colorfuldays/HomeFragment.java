@@ -103,10 +103,10 @@ public class HomeFragment extends Fragment {
         } else {
             while (data.moveToNext()) {
                 taskList.add(data.getString(1));
-                ListAdapter listAdapter = new ArrayAdapter<>(getContext(),
-                        android.R.layout.simple_list_item_1, taskList);
-                idleTaskList.setAdapter(listAdapter);
             }
+            ListAdapter listAdapter = new ArrayAdapter<>(getContext(),
+                    android.R.layout.simple_list_item_1, taskList);
+            idleTaskList.setAdapter(listAdapter);
         }
     }
 
@@ -127,8 +127,6 @@ public class HomeFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
-        } else {
-            Toast.makeText(context, "Notification Fragment Attached", Toast.LENGTH_SHORT).show();
         }
     }
 

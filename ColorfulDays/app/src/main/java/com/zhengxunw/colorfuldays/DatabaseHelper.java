@@ -16,6 +16,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME = "mytask_data";
     public static final String COL1 = "ID";
     public static final String COL2 = "TASK_NAME";
+    public static final String COL3 = "TASK_HOUR";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -23,9 +24,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        String createTable = "CREATE TABLE " + TABLE_NAME +
-                " (ID INTEGER PRIMARY KEY AUTOINCREMENT, " + "TASK_NAME TEXT)";
-        sqLiteDatabase.execSQL(createTable);
+        String creationTemplate = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s FLOAT)";
+        String creationSQL = String.format(creationTemplate, TABLE_NAME, COL1, COL2, COL3);
+        sqLiteDatabase.execSQL(creationSQL);
     }
 
     @Override
@@ -33,16 +34,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP IF TABLE EXISTS " + TABLE_NAME);
     }
 
-    public boolean addData(String task) {
+    public boolean addData(String taskName, float taskInitialHour) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(COL2, task);
 
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COL2, taskName);
+        contentValues.put(COL3, taskInitialHour);
+        dumpDB();
         return db.insert(TABLE_NAME, null, contentValues) != -1;
     }
 
     public Cursor getTaskContents() {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+    }
+
+    public void dumpDB() {
+        Cursor cursor = getTaskContents();
+        while (cursor.moveToNext()) {
+            System.out.println(cursor.getString(1) + " " + cursor.getString(2));
+        }
     }
 }
