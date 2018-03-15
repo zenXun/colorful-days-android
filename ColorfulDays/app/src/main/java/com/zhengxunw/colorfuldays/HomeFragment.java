@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
@@ -10,9 +11,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -38,6 +43,8 @@ public class HomeFragment extends Fragment {
 
     private TextView mTextDate;
     private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+    private ListView idleTaskList;
+    private DatabaseHelper db;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -75,9 +82,32 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        db = new DatabaseHelper(view.getContext());
+
         mTextDate = view.findViewById(R.id.today_date);
         displayCurrentDate();
+
+        idleTaskList = view.findViewById(R.id.idle_task_list);
+        displayTaskList();
+
         return view;
+    }
+
+    private void displayTaskList() {
+        ArrayList<String> taskList = new ArrayList<>();
+        Cursor data = db.getTaskContents();
+
+        if (data.getCount() == 0) {
+            Toast.makeText(getContext(), "Empty DB", Toast.LENGTH_SHORT).show();
+        } else {
+            while (data.moveToNext()) {
+                taskList.add(data.getString(1));
+                ListAdapter listAdapter = new ArrayAdapter<>(getContext(),
+                        android.R.layout.simple_list_item_1, taskList);
+                idleTaskList.setAdapter(listAdapter);
+            }
+        }
     }
 
     private void displayCurrentDate() {

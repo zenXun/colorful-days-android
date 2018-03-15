@@ -45,68 +45,31 @@
 
         </LinearLayout>
 
-        <ScrollView
-            android:id="@+id/scroll_item_list"
+        <ListView
+            android:id="@+id/idle_task_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="3"
-            android:background="#000000"
+            android:background="#999999"
             android:orientation="vertical"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintRight_toLeftOf="@+id/table_working_item"
+            app:layout_constraintRight_toLeftOf="@+id/working_task_list"
             app:layout_constraintLeft_toLeftOf="@+id/time_block"
             app:layout_constraintTop_toBottomOf="@+id/time_block"
             app:layout_constraintBottom_toBottomOf="parent">
+        </ListView>
 
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </TableLayout>
-        </ScrollView>
-
-        <TableLayout
-            android:id="@+id/table_working_item"
+        <ListView
+            android:id="@+id/working_task_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="#666666"
             app:layout_constraintHorizontal_weight="3"
-            app:layout_constraintLeft_toRightOf="@+id/scroll_item_list"
+            app:layout_constraintLeft_toRightOf="@+id/idle_task_list"
             app:layout_constraintRight_toRightOf="@+id/time_block"
             app:layout_constraintTop_toBottomOf="@+id/time_block"
             app:layout_constraintBottom_toBottomOf="parent">
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </TableLayout>
+        </ListView>
 
     </android.support.constraint.ConstraintLayout>
 
