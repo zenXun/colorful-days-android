@@ -1,13 +1,19 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Context;
+import android.icu.text.DateFormat;
+import android.icu.text.SimpleDateFormat;
+import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Date;
 
 
 /**
@@ -29,6 +35,9 @@ public class HomeFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    private TextView mTextDate;
+    private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
 
     public HomeFragment() {
         // Required empty public constructor
@@ -65,7 +74,15 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        mTextDate = view.findViewById(R.id.today_date);
+        displayCurrentDate();
+        return view;
+    }
+
+    private void displayCurrentDate() {
+        Date currentTime = Calendar.getInstance().getTime();
+        mTextDate.setText(dateFormat.format(currentTime));
     }
 
     // TODO: Rename method, update argument and hook method into UI event
