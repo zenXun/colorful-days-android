@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by zhengxunw on 3/15/18.
@@ -19,6 +21,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL1 = "ID";
     public static final String COL2 = "TASK_NAME";
     public static final String COL3 = "TASK_HOUR";
+    public static final int NAME_INDEX = 2;
+    public static final int HOUR_INDEX = 3;
 
     private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -55,6 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getTaskContents() {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+        return db.rawQuery("SELECT rowid _id, * FROM " + TABLE_NAME, null);
     }
+
 }

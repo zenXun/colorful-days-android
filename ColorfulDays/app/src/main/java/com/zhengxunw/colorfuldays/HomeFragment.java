@@ -11,13 +11,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -43,7 +39,7 @@ public class HomeFragment extends Fragment {
 
     private TextView mTextDate;
     private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
-    private ListView idleTaskList;
+    private IdelTaskCursorAdapter idleListAdapter;
     private DatabaseHelper db;
 
     public HomeFragment() {
@@ -82,14 +78,14 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-
-        db = DatabaseHelper.getmInstance(getContext());
+        ListView idleTaskList = view.findViewById(R.id.idle_task_list);
 
         mTextDate = view.findViewById(R.id.today_date);
-        displayCurrentDate();
+        db = DatabaseHelper.getmInstance(getContext());
+        idleListAdapter = new IdelTaskCursorAdapter(getContext(), db.getTaskContents());
+        idleTaskList.setAdapter(idleListAdapter);
 
-        idleTaskList = view.findViewById(R.id.idle_task_list);
-        displayIdelTasks();
+        displayCurrentDate();
 
         return view;
     }
@@ -97,24 +93,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        displayIdelTasks();
+        idleListAdapter.changeCursor(db.getTaskContents());
         displayCurrentDate();
-    }
-
-    private void displayIdelTasks() {
-        ArrayList<String> idleTasks = new ArrayList<>();
-        Cursor data = db.getTaskContents();
-
-        if (data.getCount() == 0) {
-            Toast.makeText(getContext(), "Empty DB", Toast.LENGTH_SHORT).show();
-        } else {
-            while (data.moveToNext()) {
-                idleTasks.add(data.getString(1));
-            }
-            ListAdapter listAdapter = new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_list_item_1, idleTasks);
-            idleTaskList.setAdapter(listAdapter);
-        }
     }
 
     private void displayCurrentDate() {
@@ -156,5 +136,23 @@ public class HomeFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public class IdelTaskCursorAdapter extends android.widget.CursorAdapter {
+
+        public IdelTaskCursorAdapter(Context context, Cursor cursor) {
+            super(context, cursor, 0);
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+            return LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            TextView task = view.findViewById(android.R.id.text1);
+            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX));
+        }
     }
 }

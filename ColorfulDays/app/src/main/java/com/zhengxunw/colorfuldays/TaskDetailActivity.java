@@ -13,15 +13,12 @@ import android.widget.Toast;
 
 public class TaskDetailActivity extends AppCompatActivity {
 
-    private DatabaseHelper db;
     private EditText mEditTaskName;
     private EditText mEditTaskInitHour;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        db = DatabaseHelper.getmInstance(getApplicationContext());
 
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -54,9 +51,9 @@ public class TaskDetailActivity extends AppCompatActivity {
                 if (name.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Task name is required.", Toast.LENGTH_SHORT).show();
                     return false;
-                } else {
-                    db.addData(name, hour.isEmpty() ? 0 : Float.parseFloat(hour));
                 }
+                DatabaseHelper db = DatabaseHelper.getmInstance(getApplicationContext());
+                db.addData(name, hour.isEmpty() ? 0 : Float.parseFloat(hour));
                 break;
         }
         onBackPressed();

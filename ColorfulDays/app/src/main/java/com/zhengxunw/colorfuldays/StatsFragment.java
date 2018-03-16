@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -35,8 +36,9 @@ public class StatsFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
-    private DatabaseHelper db;
     private ListView allTaskList;
+    private AllTaskCursorAdapter allTaskListAdapter;
+    private DatabaseHelper db;
 
     public StatsFragment() {
         // Required empty public constructor
@@ -74,29 +76,12 @@ public class StatsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
-
-        db = DatabaseHelper.getmInstance(getContext());
-
         allTaskList = view.findViewById(R.id.all_task_list);
-        displayAllTasks();
+        db = DatabaseHelper.getmInstance(getContext());
+        allTaskListAdapter = new AllTaskCursorAdapter(getContext(), db.getTaskContents());
+        allTaskList.setAdapter(allTaskListAdapter);
 
         return view;
-    }
-
-    private void displayAllTasks() {
-        ArrayList<String> allTasks = new ArrayList<>();
-        Cursor data = db.getTaskContents();
-
-        if (data.getCount() == 0) {
-            Toast.makeText(getContext(), "Empty DB", Toast.LENGTH_SHORT).show();
-        } else {
-            while (data.moveToNext()) {
-                allTasks.add(data.getString(1) + " " + data.getString(2));
-            }
-            ListAdapter listAdapter = new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_list_item_1, allTasks);
-            allTaskList.setAdapter(listAdapter);
-        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -104,6 +89,12 @@ public class StatsFragment extends Fragment {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        allTaskListAdapter.changeCursor(db.getTaskContents());
     }
 
     @Override
@@ -133,5 +124,23 @@ public class StatsFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public class AllTaskCursorAdapter extends android.widget.CursorAdapter {
+
+        public AllTaskCursorAdapter(Context context, Cursor cursor) {
+            super(context, cursor, 0);
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+            return LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            TextView task = view.findViewById(android.R.id.text1);
+            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX) + " " + cursor.getString(DatabaseHelper.HOUR_INDEX));
+        }
     }
 }

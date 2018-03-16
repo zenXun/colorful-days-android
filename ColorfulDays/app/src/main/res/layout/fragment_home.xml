@@ -57,6 +57,7 @@
             app:layout_constraintLeft_toLeftOf="@+id/time_block"
             app:layout_constraintTop_toBottomOf="@+id/time_block"
             app:layout_constraintBottom_toBottomOf="parent">
+
         </ListView>
 
         <ListView
