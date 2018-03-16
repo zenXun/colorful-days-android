@@ -75,7 +75,7 @@ public class StatsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
 
-        db = new DatabaseHelper(view.getContext());
+        db = DatabaseHelper.getmInstance(getContext());
 
         allTaskList = view.findViewById(R.id.all_task_list);
         displayAllTasks();

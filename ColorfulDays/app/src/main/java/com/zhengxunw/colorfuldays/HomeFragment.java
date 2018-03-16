@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        db = new DatabaseHelper(view.getContext());
+        db = DatabaseHelper.getmInstance(getContext());
 
         mTextDate = view.findViewById(R.id.today_date);
         displayCurrentDate();

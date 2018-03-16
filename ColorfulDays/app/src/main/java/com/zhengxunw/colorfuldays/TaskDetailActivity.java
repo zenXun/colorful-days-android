@@ -21,7 +21,7 @@ public class TaskDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        db = new DatabaseHelper(this);
+        db = DatabaseHelper.getmInstance(getApplicationContext());
 
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -53,6 +53,7 @@ public class TaskDetailActivity extends AppCompatActivity {
                 String hour = mEditTaskInitHour.getText().toString();
                 if (name.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Task name is required.", Toast.LENGTH_SHORT).show();
+                    return false;
                 } else {
                     db.addData(name, hour.isEmpty() ? 0 : Float.parseFloat(hour));
                 }
