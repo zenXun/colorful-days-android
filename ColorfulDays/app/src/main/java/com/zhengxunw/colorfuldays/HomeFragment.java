@@ -89,23 +89,30 @@ public class HomeFragment extends Fragment {
         displayCurrentDate();
 
         idleTaskList = view.findViewById(R.id.idle_task_list);
-        displayTaskList();
+        displayIdelTasks();
 
         return view;
     }
 
-    private void displayTaskList() {
-        ArrayList<String> taskList = new ArrayList<>();
+    @Override
+    public void onResume() {
+        super.onResume();
+        displayIdelTasks();
+        displayCurrentDate();
+    }
+
+    private void displayIdelTasks() {
+        ArrayList<String> idleTasks = new ArrayList<>();
         Cursor data = db.getTaskContents();
 
         if (data.getCount() == 0) {
             Toast.makeText(getContext(), "Empty DB", Toast.LENGTH_SHORT).show();
         } else {
             while (data.moveToNext()) {
-                taskList.add(data.getString(1));
+                idleTasks.add(data.getString(1));
             }
             ListAdapter listAdapter = new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_list_item_1, taskList);
+                    android.R.layout.simple_list_item_1, idleTasks);
             idleTaskList.setAdapter(listAdapter);
         }
     }
