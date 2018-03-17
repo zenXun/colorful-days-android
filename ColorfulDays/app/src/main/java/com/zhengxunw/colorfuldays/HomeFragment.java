@@ -249,8 +249,8 @@ public class HomeFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            View view = LayoutInflater.from(context).inflate(R.layout.working_task, viewGroup, false);
-            TextView textView = view.findViewById(R.id.working_task_text);
+            View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+            TextView textView = view.findViewById(android.R.id.text1);
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -263,7 +263,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            TextView task = view.findViewById(R.id.working_task_text);
+            TextView task = view.findViewById(android.R.id.text1);
             task.setText(cursor.getString(DatabaseHelper.NAME_INDEX));
         }
     }
