@@ -8,13 +8,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
 
 
 /**
@@ -78,7 +73,7 @@ public class StatsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
         allTaskList = view.findViewById(R.id.all_task_list);
         db = DatabaseHelper.getmInstance(getContext());
-        allTaskListAdapter = new AllTaskCursorAdapter(getContext(), db.getTaskContents());
+        allTaskListAdapter = new AllTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.ALL));
         allTaskList.setAdapter(allTaskListAdapter);
 
         return view;
@@ -94,7 +89,8 @@ public class StatsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        allTaskListAdapter.changeCursor(db.getTaskContents());
+        allTaskListAdapter.changeCursor(db.getTaskContentsByState(TaskItem.ALL));
+        allTaskListAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -140,7 +136,10 @@ public class StatsFragment extends Fragment {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             TextView task = view.findViewById(android.R.id.text1);
-            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX) + " " + cursor.getString(DatabaseHelper.HOUR_INDEX));
+            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX) + " " +
+                    cursor.getString(DatabaseHelper.HOUR_INDEX) + " " +
+                    cursor.getString(DatabaseHelper.STATE_INDEX));
+
         }
     }
 }

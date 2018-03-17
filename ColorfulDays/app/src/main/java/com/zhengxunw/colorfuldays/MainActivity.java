@@ -41,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_today);
+        setContentView(R.layout.activity_main);
 
-        //getApplicationContext().deleteDatabase("my_task.db");
+        //getApplicationContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);

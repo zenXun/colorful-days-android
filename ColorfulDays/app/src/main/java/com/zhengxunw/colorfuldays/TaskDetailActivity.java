@@ -53,7 +53,7 @@ public class TaskDetailActivity extends AppCompatActivity {
                     return false;
                 }
                 DatabaseHelper db = DatabaseHelper.getmInstance(getApplicationContext());
-                db.addData(name, hour.isEmpty() ? 0 : Float.parseFloat(hour));
+                db.addData(new TaskItem(name, hour.isEmpty() ? 0 : Float.parseFloat(hour)));
                 break;
         }
         onBackPressed();
