@@ -72,7 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean updateState(String taskName, int is_idle) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL4, is_idle);
-        return db.update(TABLE_NAME, contentValues, COL2 + "=" + taskName, null) != -1;
+        return db.update(TABLE_NAME, contentValues, COL2 + "='" + taskName + "'", null) != -1;
     }
 
     public Cursor getTaskContentsByState(int taskType) {

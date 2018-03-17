@@ -48,7 +48,21 @@ public class HomeFragment extends Fragment {
     private TextView mTextDate;
     private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
     private IdelTaskCursorAdapter idleListAdapter;
+    private WorkingTaskCursorAdapter workingListAdapter;
     private DatabaseHelper db;
+
+    private View.OnDragListener taskDragListener = new View.OnDragListener() {
+        @Override
+        public boolean onDrag(View view, DragEvent dragEvent){
+            switch (dragEvent.getAction()) {
+                case DragEvent.ACTION_DROP:
+                    DragContext dragContext = (DragContext) dragEvent.getLocalState();
+                    dropOperation(dragContext, view);
+                    break;
+            }
+            return true;
+        }
+    };
 
     public HomeFragment() {
         // Required empty public constructor
@@ -88,35 +102,17 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         ListView idleTaskList = view.findViewById(R.id.idle_task_list);
         ListView workingTaskList = view.findViewById(R.id.working_task_list);
-
         mTextDate = view.findViewById(R.id.today_date);
+
         db = DatabaseHelper.getmInstance(getContext());
+
         workingTaskList.setTag(WORKING_TASK_TAG);
-        workingTaskList.setOnDragListener(new View.OnDragListener() {
-            @Override
-            public boolean onDrag(View view, DragEvent dragEvent) {
-                switch (dragEvent.getAction()) {
-                    case DragEvent.ACTION_DROP:
-                        DragContext dragContext = (DragContext) dragEvent.getLocalState();
-                        dropOperation(dragContext, view);
-                        break;
-                }
-                return true;
-            }
-        });
+        workingTaskList.setOnDragListener(taskDragListener);
+        workingListAdapter = new WorkingTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.WORKING));
+        workingTaskList.setAdapter(workingListAdapter);
+
         idleTaskList.setTag(IDLE_TASK_TAG);
-        idleTaskList.setOnDragListener(new View.OnDragListener() {
-            @Override
-            public boolean onDrag(View view, DragEvent dragEvent) {
-                switch (dragEvent.getAction()) {
-                    case DragEvent.ACTION_DROP:
-                        DragContext dragContext = (DragContext) dragEvent.getLocalState();
-                        dropOperation(dragContext, view);
-                        break;
-                }
-                return true;
-            }
-        });
+        idleTaskList.setOnDragListener(taskDragListener);
         idleListAdapter = new IdelTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.IDLE));
         idleTaskList.setAdapter(idleListAdapter);
 
@@ -128,9 +124,15 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        notifyAdapters();
+        displayCurrentDate();
+    }
+
+    private void notifyAdapters() {
         idleListAdapter.changeCursor(db.getTaskContentsByState(TaskItem.IDLE));
         idleListAdapter.notifyDataSetChanged();
-        displayCurrentDate();
+        workingListAdapter.changeCursor(db.getTaskContentsByState(TaskItem.WORKING));
+        workingListAdapter.notifyDataSetChanged();
     }
 
     private void displayCurrentDate() {
@@ -230,18 +232,13 @@ public class HomeFragment extends Fragment {
         String taskName = ((TextView)dragContext.srcView).getText().toString();
         String srcListType = dragContext.srcView.getTag().toString();
         String destListType = destView.getTag().toString();
+        if (srcListType.equals(IDLE_TASK_TAG)) {
+            if (destListType.equals(WORKING_TASK_TAG)) {
+                db.updateState(taskName, TaskItem.WORKING);
+                notifyAdapters();
+            }
+        }
         Toast.makeText(getContext(), srcListType + " " + destListType, Toast.LENGTH_SHORT).show();
-//                            String taskName = dragContext.srcView.toString();
-//                            String listType = dragContext.srcView.getTag().toString();
-//                            if (listType.equals(IDLE_TASK_TAG)) {
-//                                db.updateState(taskName, TaskItem.IDLE);
-//                            } else {
-//                                db.updateState(taskName, TaskItem.WORKING);
-//                            }
-//                            dragContext.cursorAdapter.changeCursor(db.getTaskContentsByState(TaskItem.IDLE));
-//                            dragContext.cursorAdapter.notifyDataSetChanged();
-//                            destAdapter.changeCursor(db.getTaskContentsByState(TaskItem.WORKING));
-//                            destAdapter.notifyDataSetChanged();
     }
 
     public class WorkingTaskCursorAdapter extends android.widget.CursorAdapter {
@@ -252,12 +249,22 @@ public class HomeFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            return null;
+            View view = LayoutInflater.from(context).inflate(R.layout.working_task, viewGroup, false);
+            TextView textView = view.findViewById(R.id.working_task_text);
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    db.updateState(((TextView)view).getText().toString(), TaskItem.IDLE);
+                    notifyAdapters();
+                }
+            });
+            return view;
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-
+            TextView task = view.findViewById(R.id.working_task_text);
+            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX));
         }
     }
 
