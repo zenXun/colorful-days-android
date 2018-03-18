@@ -9,6 +9,7 @@ import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -47,9 +48,29 @@ public class HomeFragment extends Fragment {
 
     private TextView mTextDate;
     private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
-    private IdelTaskCursorAdapter idleListAdapter;
+    private IdleTaskCursorAdapter idleListAdapter;
     private WorkingTaskCursorAdapter workingListAdapter;
     private DatabaseHelper db;
+
+    //runs without a timer by reposting this handler at the end of the runnable
+    private TextView timerTextView;
+    long startTime = 0;
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            timerTextView.setText(String.format("%d:%02d", minutes, seconds));
+
+            timerHandler.postDelayed(this, 500);
+        }
+    };
+
 
     private View.OnDragListener taskDragListener = new View.OnDragListener() {
         @Override
@@ -113,7 +134,7 @@ public class HomeFragment extends Fragment {
 
         idleTaskList.setTag(IDLE_TASK_TAG);
         idleTaskList.setOnDragListener(taskDragListener);
-        idleListAdapter = new IdelTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.IDLE));
+        idleListAdapter = new IdleTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.IDLE));
         idleTaskList.setAdapter(idleListAdapter);
 
         displayCurrentDate();
@@ -176,9 +197,9 @@ public class HomeFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public class IdelTaskCursorAdapter extends android.widget.CursorAdapter {
+    public class IdleTaskCursorAdapter extends android.widget.CursorAdapter {
 
-        public IdelTaskCursorAdapter(Context context, Cursor cursor) {
+        public IdleTaskCursorAdapter(Context context, Cursor cursor) {
             super(context, cursor, 0);
         }
 
@@ -249,12 +270,14 @@ public class HomeFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
-            TextView textView = view.findViewById(android.R.id.text1);
-            textView.setOnClickListener(new View.OnClickListener() {
+            View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_2, viewGroup, false);
+            view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    db.updateState(((TextView)view).getText().toString(), TaskItem.IDLE);
+                    long endTime = System.currentTimeMillis();
+                    timerHandler.removeCallbacks(timerRunnable);
+                    Toast.makeText(getContext(), String.valueOf(endTime - startTime), Toast.LENGTH_SHORT).show();
+                    db.updateState(((TextView)view.findViewById(android.R.id.text1)).getText().toString(), TaskItem.IDLE);
                     notifyAdapters();
                 }
             });
@@ -265,6 +288,9 @@ public class HomeFragment extends Fragment {
         public void bindView(View view, Context context, Cursor cursor) {
             TextView task = view.findViewById(android.R.id.text1);
             task.setText(cursor.getString(DatabaseHelper.NAME_INDEX));
+            timerTextView = view.findViewById(android.R.id.text2);
+            startTime = System.currentTimeMillis();
+            timerHandler.postDelayed(timerRunnable, 0);
         }
     }
 
