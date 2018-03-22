@@ -21,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -53,23 +55,25 @@ public class HomeFragment extends Fragment {
     private DatabaseHelper db;
 
     //runs without a timer by reposting this handler at the end of the runnable
-    private TextView timerTextView;
-    long startTime = 0;
-    Handler timerHandler = new Handler();
-    Runnable timerRunnable = new Runnable() {
-
-        @Override
+    Map<String, Long> taskToTime = new HashMap<>();
+    Map<String, TextView> taskToView = new HashMap<>();
+    Map<String, Handler> taskToHandler = new HashMap<>();
+    Map<String, Runnable> taskToRunnable = new HashMap<>();
+    class displayTimerOnView implements Runnable {
+        String taskName;
+        displayTimerOnView(String taskName) {
+            this.taskName = taskName;
+        }
         public void run() {
-            long millis = System.currentTimeMillis() - startTime;
+            long millis = System.currentTimeMillis() - taskToTime.get(taskName);
             int seconds = (int) (millis / 1000);
             int minutes = seconds / 60;
             seconds = seconds % 60;
 
-            timerTextView.setText(String.format("%d:%02d", minutes, seconds));
-
-            timerHandler.postDelayed(this, 500);
+            taskToView.get(taskName).setText(String.format("%d:%02d", minutes, seconds));
+            taskToHandler.get(taskName).postDelayed(this, 500);
         }
-    };
+    }
 
 
     private View.OnDragListener taskDragListener = new View.OnDragListener() {
@@ -259,7 +263,6 @@ public class HomeFragment extends Fragment {
                 notifyAdapters();
             }
         }
-        Toast.makeText(getContext(), srcListType + " " + destListType, Toast.LENGTH_SHORT).show();
     }
 
     public class WorkingTaskCursorAdapter extends android.widget.CursorAdapter {
@@ -271,12 +274,20 @@ public class HomeFragment extends Fragment {
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
             View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_2, viewGroup, false);
+            final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
+            taskToView.put(taskName, (TextView) view.findViewById(android.R.id.text2));
+            Handler handler = new Handler();
+            taskToHandler.put(taskName, handler);
+            Runnable runnable = new displayTimerOnView(taskName);
+            taskToRunnable.put(taskName, runnable);
+            taskToTime.put(taskName, System.currentTimeMillis());
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    long endTime = System.currentTimeMillis();
-                    timerHandler.removeCallbacks(timerRunnable);
-                    Toast.makeText(getContext(), String.valueOf(endTime - startTime), Toast.LENGTH_SHORT).show();
+                    float timeAdded = (float)(System.currentTimeMillis() - taskToTime.get(taskName)) / 3600000;
+                    db.addTime(taskName, timeAdded);
+                    Toast.makeText(getContext(), String.valueOf(timeAdded), Toast.LENGTH_SHORT).show();
+                    taskToHandler.get(taskName).removeCallbacks(taskToRunnable.get(taskName));
                     db.updateState(((TextView)view.findViewById(android.R.id.text1)).getText().toString(), TaskItem.IDLE);
                     notifyAdapters();
                 }
@@ -286,11 +297,10 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            TextView task = view.findViewById(android.R.id.text1);
-            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX));
-            timerTextView = view.findViewById(android.R.id.text2);
-            startTime = System.currentTimeMillis();
-            timerHandler.postDelayed(timerRunnable, 0);
+            TextView taskView = view.findViewById(android.R.id.text1);
+            String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
+            taskView.setText(taskName);
+            taskToHandler.get(taskName).postDelayed(taskToRunnable.get(taskName), 0);
         }
     }
 
