@@ -10,6 +10,7 @@ import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -54,27 +55,10 @@ public class HomeFragment extends Fragment {
     private WorkingTaskCursorAdapter workingListAdapter;
     private DatabaseHelper db;
 
-    //runs without a timer by reposting this handler at the end of the runnable
+    Handler handler = new Handler();
     Map<String, Long> taskToTime = new HashMap<>();
     Map<String, TextView> taskToView = new HashMap<>();
-    Map<String, Handler> taskToHandler = new HashMap<>();
     Map<String, Runnable> taskToRunnable = new HashMap<>();
-    class displayTimerOnView implements Runnable {
-        String taskName;
-        displayTimerOnView(String taskName) {
-            this.taskName = taskName;
-        }
-        public void run() {
-            long millis = System.currentTimeMillis() - taskToTime.get(taskName);
-            int seconds = (int) (millis / 1000);
-            int minutes = seconds / 60;
-            seconds = seconds % 60;
-
-            taskToView.get(taskName).setText(String.format("%d:%02d", minutes, seconds));
-            taskToHandler.get(taskName).postDelayed(this, 500);
-        }
-    }
-
 
     private View.OnDragListener taskDragListener = new View.OnDragListener() {
         @Override
@@ -276,18 +260,22 @@ public class HomeFragment extends Fragment {
             View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_2, viewGroup, false);
             final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
             taskToView.put(taskName, (TextView) view.findViewById(android.R.id.text2));
-            Handler handler = new Handler();
-            taskToHandler.put(taskName, handler);
-            Runnable runnable = new displayTimerOnView(taskName);
-            taskToRunnable.put(taskName, runnable);
-            taskToTime.put(taskName, System.currentTimeMillis());
+            if (!taskToRunnable.containsKey(taskName)) {
+                Runnable runnable = new displayTimerOnView(taskName);
+                taskToRunnable.put(taskName, runnable);
+                taskToTime.put(taskName, System.currentTimeMillis());
+            }
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     float timeAdded = (float)(System.currentTimeMillis() - taskToTime.get(taskName)) / 3600000;
                     db.addTime(taskName, timeAdded);
                     Toast.makeText(getContext(), String.valueOf(timeAdded), Toast.LENGTH_SHORT).show();
-                    taskToHandler.get(taskName).removeCallbacks(taskToRunnable.get(taskName));
+                    handler.removeCallbacks(taskToRunnable.get(taskName));
+
+                    taskToView.remove(taskName);
+                    taskToRunnable.remove(taskName);
+                    taskToTime.remove(taskName);
                     db.updateState(((TextView)view.findViewById(android.R.id.text1)).getText().toString(), TaskItem.IDLE);
                     notifyAdapters();
                 }
@@ -300,7 +288,7 @@ public class HomeFragment extends Fragment {
             TextView taskView = view.findViewById(android.R.id.text1);
             String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
             taskView.setText(taskName);
-            taskToHandler.get(taskName).postDelayed(taskToRunnable.get(taskName), 0);
+            handler.post(taskToRunnable.get(taskName));
         }
     }
 
@@ -314,4 +302,20 @@ public class HomeFragment extends Fragment {
             this.cursorAdapter = cursorAdapter;
         }
     }
+
+    class displayTimerOnView implements Runnable {
+        String taskName;
+        displayTimerOnView(String taskName) {
+            this.taskName = taskName;
+        }
+        public void run() {
+            long millis = System.currentTimeMillis() - taskToTime.get(taskName);
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+            taskToView.get(taskName).setText(String.format("%d:%02d", minutes, seconds));
+            handler.post(this);
+        }
+    }
+
 }
