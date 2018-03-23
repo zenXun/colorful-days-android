@@ -26,17 +26,19 @@
         android:id="@+id/edit_task_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"/>
+        android:layout_gravity="center_vertical"
+        android:hint="Task Name" />
 
     <EditText
         android:id="@+id/edit_task_init_hour"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="Task Hour" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:text="Color Setting" />
 
 </LinearLayout>

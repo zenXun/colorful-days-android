@@ -14,11 +14,13 @@ public class TaskItem {
     private String taskName;
     private float taskHour;
     private int isIdle;
+    private int color;
 
-    TaskItem(String taskName, float taskHour) {
+    TaskItem(String taskName, float taskHour, int color) {
         this.taskName = taskName;
         this.taskHour = taskHour;
         this.isIdle = IDLE;
+        this.color = color;
     }
 
     public String getTaskName() {
@@ -31,5 +33,9 @@ public class TaskItem {
 
     public int isIdle() {
         return isIdle;
+    }
+
+    public int getColor() {
+        return color;
     }
 }

@@ -2,7 +2,6 @@ package com.zhengxunw.colorfuldays;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -116,7 +115,7 @@ public class HomeFragment extends Fragment {
         ListView workingTaskList = view.findViewById(R.id.working_task_list);
         mTextDate = view.findViewById(R.id.today_date);
 
-        db = DatabaseHelper.getmInstance(getContext());
+        db = DatabaseHelper.getInstance(getContext());
 
         workingTaskList.setTag(WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDragListener);
@@ -250,6 +249,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            view.setBackgroundColor(cursor.getInt(DatabaseHelper.COLOR_INDEX));
             TextView task = view.findViewById(android.R.id.text1);
             task.setText(cursor.getString(DatabaseHelper.NAME_INDEX));
         }
@@ -304,6 +304,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            view.setBackgroundColor(cursor.getInt(DatabaseHelper.COLOR_INDEX));
             TextView taskView = view.findViewById(android.R.id.text1);
             String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
             taskView.setText(taskName);

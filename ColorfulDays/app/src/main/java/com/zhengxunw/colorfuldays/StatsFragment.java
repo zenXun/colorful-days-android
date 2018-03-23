@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -72,7 +73,7 @@ public class StatsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
         allTaskList = view.findViewById(R.id.all_task_list);
-        db = DatabaseHelper.getmInstance(getContext());
+        db = DatabaseHelper.getInstance(getContext());
         allTaskListAdapter = new AllTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.ALL));
         allTaskList.setAdapter(allTaskListAdapter);
 
@@ -130,15 +131,28 @@ public class StatsFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            return LayoutInflater.from(context).inflate(android.R.layout.select_dialog_item, viewGroup, false);
+            View view = LayoutInflater.from(context).inflate(android.R.layout.select_dialog_item, viewGroup, false);
+            return view;
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            view.setBackgroundColor(cursor.getInt(DatabaseHelper.COLOR_INDEX));
             TextView task = view.findViewById(android.R.id.text1);
-            task.setText(cursor.getString(DatabaseHelper.NAME_INDEX) + " " +
-                    cursor.getString(DatabaseHelper.HOUR_INDEX) + " hours");
-
+            final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
+            final float hour = cursor.getFloat(DatabaseHelper.HOUR_INDEX);
+            final int color = cursor.getInt(DatabaseHelper.COLOR_INDEX);
+            task.setText(taskName + " " + String.valueOf(hour) + " hours");
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getContext(), TaskDetailActivity.class);
+                    intent.putExtra("taskName", taskName);
+                    intent.putExtra("taskHour", hour);
+                    intent.putExtra("taskColor", color);
+                    startActivity(intent);
+                }
+            });
         }
     }
 }
