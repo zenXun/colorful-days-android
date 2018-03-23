@@ -1,8 +1,11 @@
 package com.zhengxunw.colorfuldays;
 
+import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.icu.text.DateFormat;
 import android.icu.text.SimpleDateFormat;
@@ -10,7 +13,6 @@ import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -19,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -194,9 +197,24 @@ public class HomeFragment extends Fragment {
         @Override
         public View newView(Context context, final Cursor cursor, final ViewGroup viewGroup) {
             View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+            final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
             view.setTag(IDLE_TASK_TAG);
             final ListView srcListView = (ListView) viewGroup;
             final DragContext dragContext = new DragContext(view, (CursorAdapter) srcListView.getAdapter());
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Calendar c = Calendar.getInstance();
+                    new TimePickerDialog(getContext(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+                            float timeAdded = hourOfDay + (float)minute / 60;
+                            db.addTime(taskName, timeAdded);
+                            notifyAdapters();
+                        }
+                    }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
+                }
+            });
             view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
@@ -258,6 +276,7 @@ public class HomeFragment extends Fragment {
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
             View view = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_2, viewGroup, false);
+            view.setBackgroundColor(Color.CYAN);
             final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
             taskToView.put(taskName, (TextView) view.findViewById(android.R.id.text2));
             if (!taskToRunnable.containsKey(taskName)) {

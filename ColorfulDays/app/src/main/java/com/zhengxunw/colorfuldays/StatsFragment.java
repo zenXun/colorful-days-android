@@ -130,15 +130,14 @@ public class StatsFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            return LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+            return LayoutInflater.from(context).inflate(android.R.layout.select_dialog_item, viewGroup, false);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             TextView task = view.findViewById(android.R.id.text1);
             task.setText(cursor.getString(DatabaseHelper.NAME_INDEX) + " " +
-                    cursor.getString(DatabaseHelper.HOUR_INDEX) + " " +
-                    cursor.getString(DatabaseHelper.STATE_INDEX));
+                    cursor.getString(DatabaseHelper.HOUR_INDEX) + " hours");
 
         }
     }

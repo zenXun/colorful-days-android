@@ -64,13 +64,12 @@
             android:id="@+id/working_task_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="#666666"
+            android:background="#222222"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_weight="3"
             app:layout_constraintLeft_toRightOf="@+id/idle_task_list"
             app:layout_constraintRight_toRightOf="@+id/time_block"
-            app:layout_constraintTop_toBottomOf="@+id/time_block"
-            app:layout_constraintBottom_toBottomOf="parent">
-        </ListView>
+            app:layout_constraintTop_toBottomOf="@+id/time_block"></ListView>
 
     </android.support.constraint.ConstraintLayout>
 
