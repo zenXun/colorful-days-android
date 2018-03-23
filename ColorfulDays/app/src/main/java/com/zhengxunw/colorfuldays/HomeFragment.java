@@ -2,6 +2,7 @@ package com.zhengxunw.colorfuldays;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -25,7 +26,9 @@ import android.widget.Toast;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -56,6 +59,8 @@ public class HomeFragment extends Fragment {
     private IdleTaskCursorAdapter idleListAdapter;
     private WorkingTaskCursorAdapter workingListAdapter;
     private DatabaseHelper db;
+    private static final String START_TIME_MAPPING_KEY = "startTime";
+    private static final String TASK_START_TIME_SEPARTOR = "_";
 
     Handler handler = new Handler();
     Map<String, Long> taskToTime = new HashMap<>();
@@ -164,12 +169,38 @@ public class HomeFragment extends Fragment {
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         }
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        loadTaskStartTime(sharedPref.getStringSet(START_TIME_MAPPING_KEY, null));
+        context.getSharedPreferences(START_TIME_MAPPING_KEY, 0).edit().clear().apply();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putStringSet(START_TIME_MAPPING_KEY, serializeTaskStartTime());
+        editor.apply();
+    }
+
+    private Set<String> serializeTaskStartTime() {
+        Set<String> ret = new HashSet<>();
+        for (Map.Entry<String, Long> entry : taskToTime.entrySet()) {
+            ret.add(entry.getKey() + "_" + String.valueOf(entry.getValue()));
+        }
+        return ret;
+    }
+
+    private void loadTaskStartTime(Set<String> serializedTaskTime) {
+        if (serializedTaskTime != null) {
+            for (String elem : serializedTaskTime) {
+                String[] parts = elem.split(TASK_START_TIME_SEPARTOR);
+                String taskName = parts[0];
+                String startTime = parts[1];
+                taskToTime.put(taskName, Long.valueOf(startTime));
+            }
+        }
     }
 
     /**
@@ -282,7 +313,9 @@ public class HomeFragment extends Fragment {
             if (!taskToRunnable.containsKey(taskName)) {
                 Runnable runnable = new displayTimerOnView(taskName);
                 taskToRunnable.put(taskName, runnable);
-                taskToTime.put(taskName, System.currentTimeMillis());
+                if (!taskToTime.containsKey(taskName)) {
+                    taskToTime.put(taskName, System.currentTimeMillis());
+                }
             }
             view.setOnClickListener(new View.OnClickListener() {
                 @Override

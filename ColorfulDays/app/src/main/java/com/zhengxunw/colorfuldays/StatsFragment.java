@@ -142,7 +142,7 @@ public class StatsFragment extends Fragment {
             final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
             final float hour = cursor.getFloat(DatabaseHelper.HOUR_INDEX);
             final int color = cursor.getInt(DatabaseHelper.COLOR_INDEX);
-            task.setText(taskName + " " + String.valueOf(hour) + " hours");
+            task.setText(taskName + " " + String.format("%.02f", hour) + " hours");
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
