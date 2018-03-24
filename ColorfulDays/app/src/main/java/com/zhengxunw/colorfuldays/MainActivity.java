@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -10,6 +11,10 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,7 +27,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // clear DB
-        // getApplicationContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
+        getApplicationContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
+        DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
+        Calendar c = Calendar.getInstance();
+        c.set(2018, 2, 10, 0, 0);
+        db.appendColor(HomeFragment.dateKeyFormat.format(c.getTime()), Color.BLACK);
+        c.set(2018, 2, 11, 0, 0);
+        db.appendColor(HomeFragment.dateKeyFormat.format(c.getTime()), Color.BLUE);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

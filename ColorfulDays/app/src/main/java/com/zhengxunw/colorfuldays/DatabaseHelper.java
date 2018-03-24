@@ -166,7 +166,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor queryColorByDate(String date) {
-        String sql = String.format("SELECT * FROM %s WHERE %s='%s'", COLOR_TABLE_NAME, COLOR_TABLE_DATE, date);
+        String sql = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", COLOR_TABLE_NAME, COLOR_TABLE_DATE, date);
         return db.rawQuery(sql, null);
     }
 }

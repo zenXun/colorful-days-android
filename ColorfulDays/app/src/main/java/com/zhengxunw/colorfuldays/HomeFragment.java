@@ -35,7 +35,7 @@ public class HomeFragment extends Fragment {
     private static final String START_TIME_MAPPING_KEY = "startTime";
     private static final String TASK_START_TIME_SEPARATOR = "_";
     private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
-    private static final DateFormat dateKeyFormat = new SimpleDateFormat("dd-MMM-yyyy");
+    public static final DateFormat dateKeyFormat = new SimpleDateFormat("dd-MMM-yyyy");
 
     private TextView mTextDate;
     private IdleTaskCursorAdapter idleListAdapter;
