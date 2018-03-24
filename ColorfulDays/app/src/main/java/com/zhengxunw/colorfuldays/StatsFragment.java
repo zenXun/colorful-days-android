@@ -3,7 +3,6 @@ package com.zhengxunw.colorfuldays;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,27 +11,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link StatsFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link StatsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class StatsFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    public static final String TASK_NAME_KEY = "taskName";
+    public static final String TASK_HOUR_KEY = "taskHour";
+    public static final String TASK_COLOR_KEY = "taskColor";
 
-    private OnFragmentInteractionListener mListener;
-    private ListView allTaskList;
     private AllTaskCursorAdapter allTaskListAdapter;
     private DatabaseHelper db;
 
@@ -44,27 +28,14 @@ public class StatsFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment StatsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static StatsFragment newInstance(String param1, String param2) {
+    public static StatsFragment newInstance() {
         StatsFragment fragment = new StatsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -72,19 +43,12 @@ public class StatsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
-        allTaskList = view.findViewById(R.id.all_task_list);
+        ListView allTaskList = view.findViewById(R.id.all_task_list);
         db = DatabaseHelper.getInstance(getContext());
         allTaskListAdapter = new AllTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.ALL));
         allTaskList.setAdapter(allTaskListAdapter);
 
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -94,62 +58,32 @@ public class StatsFragment extends Fragment {
         allTaskListAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
-
     public class AllTaskCursorAdapter extends android.widget.CursorAdapter {
 
-        public AllTaskCursorAdapter(Context context, Cursor cursor) {
+        AllTaskCursorAdapter(Context context, Cursor cursor) {
             super(context, cursor, 0);
         }
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            View view = LayoutInflater.from(context).inflate(android.R.layout.select_dialog_item, viewGroup, false);
-            return view;
+            return LayoutInflater.from(context).inflate(android.R.layout.select_dialog_item, viewGroup, false);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            view.setBackgroundColor(cursor.getInt(DatabaseHelper.COLOR_INDEX));
+            view.setBackgroundColor(cursor.getInt(DatabaseHelper.TASK_TABLE_COLOR_INDEX));
             TextView task = view.findViewById(android.R.id.text1);
-            final String taskName = cursor.getString(DatabaseHelper.NAME_INDEX);
-            final float hour = cursor.getFloat(DatabaseHelper.HOUR_INDEX);
-            final int color = cursor.getInt(DatabaseHelper.COLOR_INDEX);
+            final String taskName = cursor.getString(DatabaseHelper.TASK_TABLE_NAME_INDEX);
+            final float hour = cursor.getFloat(DatabaseHelper.TASK_TABLE_HOUR_INDEX);
+            final int color = cursor.getInt(DatabaseHelper.TASK_TABLE_COLOR_INDEX);
             task.setText(taskName + " " + String.format("%.02f", hour) + " hours");
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                    intent.putExtra("taskName", taskName);
-                    intent.putExtra("taskHour", hour);
-                    intent.putExtra("taskColor", color);
+                    intent.putExtra(TASK_NAME_KEY, taskName);
+                    intent.putExtra(TASK_HOUR_KEY, hour);
+                    intent.putExtra(TASK_COLOR_KEY, color);
                     startActivity(intent);
                 }
             });

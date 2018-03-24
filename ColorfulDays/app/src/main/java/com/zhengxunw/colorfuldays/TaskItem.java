@@ -1,5 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
+import android.content.ContentValues;
+
 /**
  * Created by zhengxunw on 3/16/18.
  */
@@ -37,5 +39,14 @@ public class TaskItem {
 
     public int getColor() {
         return color;
+    }
+
+    public ContentValues toContentValues() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.TASK_NAME, taskName);
+        contentValues.put(DatabaseHelper.TASK_HOUR, taskHour);
+        contentValues.put(DatabaseHelper.IS_IDLE, isIdle);
+        contentValues.put(DatabaseHelper.COLOR, color);
+        return contentValues;
     }
 }

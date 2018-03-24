@@ -29,13 +29,10 @@ public class TaskDetailActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        String taskNameKey = "taskName";
-        String colorKey = "taskColor";
-        String hourKey = "taskHour";
 
-        taskHour = intent.getFloatExtra(hourKey, 0);
-        taskName = intent.getStringExtra(taskNameKey);
-        taskColor = intent.getIntExtra(colorKey, 0);
+        taskHour = intent.getFloatExtra(StatsFragment.TASK_NAME_KEY, 0);
+        taskName = intent.getStringExtra(StatsFragment.TASK_HOUR_KEY);
+        taskColor = intent.getIntExtra(StatsFragment.TASK_COLOR_KEY, 0);
 
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -105,7 +102,7 @@ public class TaskDetailActivity extends AppCompatActivity {
                     db.updateData(taskItem);
                 } else {
                     if (taskName != null) {
-                        db.removeTask(taskName);
+                        db.removeTaskByName(taskName);
                     }
                     db.insertData(taskItem);
                 }

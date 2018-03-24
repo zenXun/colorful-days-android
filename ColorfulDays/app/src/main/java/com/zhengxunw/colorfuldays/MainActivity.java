@@ -16,42 +16,42 @@ public class MainActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private Fragment homeFragment, statsFragment, colorFragment;
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            switch (item.getItemId()) {
-                case R.id.navigation_today:
-                    transaction.replace(R.id.content, homeFragment).commit();
-                    return true;
-                case R.id.navigation_single_stats:
-                    transaction.replace(R.id.content, statsFragment).commit();
-                    return true;
-                case R.id.navigation_total_stats:
-                    transaction.replace(R.id.content, colorFragment).commit();
-                    return true;
-            }
-            return false;
-        }
-
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //getApplicationContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
+        // clear DB
+        // getApplicationContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                switch (item.getItemId()) {
+                    case R.id.navigation_today:
+                        transaction.replace(R.id.content, homeFragment).commit();
+                        return true;
+                    case R.id.navigation_single_stats:
+                        transaction.replace(R.id.content, statsFragment).commit();
+                        return true;
+                    case R.id.navigation_total_stats:
+                        transaction.replace(R.id.content, colorFragment).commit();
+                        return true;
+                }
+                return false;
+            }
+
+        });
 
         fragmentManager = getSupportFragmentManager();
-        homeFragment = new HomeFragment();
-        statsFragment = new StatsFragment();
-        colorFragment = new ColorFragment();
+        homeFragment = HomeFragment.newInstance();
+        statsFragment = StatsFragment.newInstance();
+        colorFragment = ColorFragment.newInstance();
+
+        // show home fragment
         fragmentManager.beginTransaction().replace(R.id.content, homeFragment).commit();
     }
 
