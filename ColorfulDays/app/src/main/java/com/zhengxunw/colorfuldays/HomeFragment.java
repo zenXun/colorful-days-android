@@ -122,6 +122,9 @@ public class HomeFragment extends Fragment {
 
         db = DatabaseHelper.getInstance(getContext());
 
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        loadTaskStartTime(sharedPref.getStringSet(START_TIME_MAPPING_KEY, null));
+
         workingTaskList.setTag(WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDragListener);
         workingListAdapter = new WorkingTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.WORKING));
