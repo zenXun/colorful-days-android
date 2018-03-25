@@ -11,6 +11,7 @@ import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_COLOR;
@@ -238,12 +239,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private List<String> getKeysToBePopulated(String startDateKey, String endDateKey) {
         List<String> ret = new ArrayList<>();
-        LocalDate endDate = TimeUtils.toLocalDate(endDateKey);
-        LocalDate startDate = TimeUtils.toLocalDate(startDateKey);
-        for (startDate = startDate.plusDays(1); startDate.isBefore(endDate); startDate = startDate.plusDays(1)) {
+        Calendar endDate = TimeUtils.toCalendar(endDateKey);
+        Calendar startDate = TimeUtils.toCalendar(startDateKey);
+        startDate.add(Calendar.DAY_OF_MONTH, 1);
+        while (startDate.before(endDate)) {
             ret.add(TimeUtils.toDateStr(startDate));
+            startDate.add(Calendar.DAY_OF_MONTH, 1);
         }
-        ret.add(TimeUtils.toDateStr(endDate));
         return ret;
     }
 

@@ -36,11 +36,15 @@ public class TimeUtils {
         return TimeUtils.LOCALDATE_FORMAT_AS_KEY.format(date);
     }
 
+    public static String toDateStr(Calendar calendar) {
+        return TimeUtils.DATE_FORMAT_AS_KEY.format(calendar.getTime());
+    }
+
     private static LocalDate toLocalDate(Calendar calendar) {
         return LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
     }
 
-    private static Calendar toCalendar(String dateStr) {
+    public static Calendar toCalendar(String dateStr) {
         Calendar date = Calendar.getInstance();
         try {
             date.setTime(TimeUtils.DATE_FORMAT_AS_KEY.parse(dateStr));
