@@ -12,9 +12,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.time.LocalDate;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
+import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
+
 import java.util.Calendar;
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,13 +29,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // clear DB
-        getApplicationContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
+        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
-        Calendar c = Calendar.getInstance();
-        c.set(2018, 2, 10, 0, 0);
-        db.appendColor(HomeFragment.dateKeyFormat.format(c.getTime()), Color.BLACK);
-        c.set(2018, 2, 11, 0, 0);
-        db.appendColor(HomeFragment.dateKeyFormat.format(c.getTime()), Color.BLUE);
+
+//        db.insertData(new TaskItem("READING", 20, Color.BLUE));
+//
+//        Calendar c = Calendar.getInstance();
+//        c.set(2018, 2, 10, 0, 0);
+//        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
+//        c.set(2018, 2, 11, 0, 0);
+//        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
+//        c.set(2018, 2, 11, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 12, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 13, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 14, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 15, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+
+
+        db.populateColorTable();
+
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

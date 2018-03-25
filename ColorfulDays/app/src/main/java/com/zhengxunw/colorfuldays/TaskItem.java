@@ -2,6 +2,8 @@ package com.zhengxunw.colorfuldays;
 
 import android.content.ContentValues;
 
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
+
 /**
  * Created by zhengxunw on 3/16/18.
  */
@@ -43,10 +45,10 @@ public class TaskItem {
 
     public ContentValues toContentValues() {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(DatabaseHelper.TASK_NAME, taskName);
-        contentValues.put(DatabaseHelper.TASK_HOUR, taskHour);
-        contentValues.put(DatabaseHelper.IS_IDLE, isIdle);
-        contentValues.put(DatabaseHelper.COLOR, color);
+        contentValues.put(DatabaseConstants.TASK_TABLE_TASK_NAME, taskName);
+        contentValues.put(DatabaseConstants.TASK_TABLE_TASK_HOUR, taskHour);
+        contentValues.put(DatabaseConstants.TASK_TABLE_IS_IDLE, isIdle);
+        contentValues.put(DatabaseConstants.TASK_TABLE_COLOR, color);
         return contentValues;
     }
 }

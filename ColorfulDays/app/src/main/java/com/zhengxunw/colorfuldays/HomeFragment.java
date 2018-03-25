@@ -7,8 +7,6 @@ import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.icu.text.DateFormat;
-import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,6 +20,10 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.zhengxunw.colorfuldays.commons.Constants;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
+import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,13 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class HomeFragment extends Fragment {
-
-    private static final String IDLE_TASK_TAG = "idle task";
-    private static final String WORKING_TASK_TAG = "working task";
-    private static final String START_TIME_MAPPING_KEY = "startTime";
-    private static final String TASK_START_TIME_SEPARATOR = "_";
-    private static final DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
-    public static final DateFormat dateKeyFormat = new SimpleDateFormat("dd-MMM-yyyy");
 
     private TextView mTextDate;
     private IdleTaskCursorAdapter idleListAdapter;
@@ -87,12 +82,12 @@ public class HomeFragment extends Fragment {
             }
         };
 
-        workingTaskList.setTag(WORKING_TASK_TAG);
+        workingTaskList.setTag(Constants.WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDropListener);
         workingListAdapter = new WorkingTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.WORKING));
         workingTaskList.setAdapter(workingListAdapter);
 
-        idleTaskList.setTag(IDLE_TASK_TAG);
+        idleTaskList.setTag(Constants.IDLE_TASK_TAG);
         idleTaskList.setOnDragListener(taskDropListener);
         idleListAdapter = new IdleTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.IDLE));
         idleTaskList.setAdapter(idleListAdapter);
@@ -125,36 +120,40 @@ public class HomeFragment extends Fragment {
 
     private void displayCurrentDate() {
         Date currentTime = Calendar.getInstance().getTime();
-        mTextDate.setText(dateFormat.format(currentTime));
+        mTextDate.setText(TimeUtils.DATE_FORMAT_HOME.format(currentTime));
     }
 
     private void serializeTaskStartTime() {
         Set<String> ret = new HashSet<>();
         for (Map.Entry<String, Long> entry : taskToTime.entrySet()) {
-            ret.add(entry.getKey() + "_" + String.valueOf(entry.getValue()));
+            ret.add(entry.getKey() +
+                    Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR +
+                    String.valueOf(entry.getValue()));
         }
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet(START_TIME_MAPPING_KEY, ret);
+        editor.putStringSet(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_KEY, ret);
         editor.apply();
     }
 
     private void loadTaskStartTime() {
         Set<String> serializedTaskTime = getActivity().getPreferences(Context.MODE_PRIVATE)
-                .getStringSet(START_TIME_MAPPING_KEY, null);
+                .getStringSet(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_KEY, null);
         if (serializedTaskTime != null) {
             for (String elem : serializedTaskTime) {
-                String[] parts = elem.split(TASK_START_TIME_SEPARATOR);
+                String[] parts = elem.split(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR);
                 String taskName = parts[0];
                 String startTime = parts[1];
                 taskToTime.put(taskName, Long.valueOf(startTime));
             }
         }
-        getContext().getSharedPreferences(START_TIME_MAPPING_KEY, 0).edit().clear().apply();
+        getContext()
+                .getSharedPreferences(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_KEY, 0)
+                .edit().clear().apply();
     }
 
     public static String getCurrentDate() {
-        return dateKeyFormat.format(Calendar.getInstance().getTime());
+        return TimeUtils.DATE_FORMAT_AS_KEY.format(Calendar.getInstance().getTime());
     }
 
     public class IdleTaskCursorAdapter extends android.widget.CursorAdapter {
@@ -167,14 +166,13 @@ public class HomeFragment extends Fragment {
         public View newView(Context context, final Cursor cursor, final ViewGroup viewGroup) {
             View view = LayoutInflater.from(context)
                     .inflate(android.R.layout.simple_list_item_1, viewGroup, false);
-            final String taskName = cursor.getString(DatabaseHelper.TASK_TABLE_NAME_INDEX);
-            view.setTag(IDLE_TASK_TAG);
+            final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
+            view.setTag(Constants.IDLE_TASK_TAG);
             final DragContext dragContext = new DragContext(view);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    new TimePickerDialog(getContext(),
-                            android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+                    new TimePickerDialog(getContext(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
                             new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
@@ -221,9 +219,9 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            view.setBackgroundColor(cursor.getInt(DatabaseHelper.TASK_TABLE_COLOR_INDEX));
+            view.setBackgroundColor(DatabaseHelper.getColorInTaskTable(cursor));
             TextView task = view.findViewById(android.R.id.text1);
-            task.setText(cursor.getString(DatabaseHelper.TASK_TABLE_NAME_INDEX));
+            task.setText(DatabaseHelper.getNameInTaskTable(cursor));
         }
     }
 
@@ -231,8 +229,8 @@ public class HomeFragment extends Fragment {
         String taskName = ((TextView)dragContext.srcView).getText().toString();
         String srcListType = dragContext.srcView.getTag().toString();
         String destListType = destView.getTag().toString();
-        if (srcListType.equals(IDLE_TASK_TAG)) {
-            if (destListType.equals(WORKING_TASK_TAG)) {
+        if (srcListType.equals(Constants.IDLE_TASK_TAG)) {
+            if (destListType.equals(Constants.WORKING_TASK_TAG)) {
                 db.updateState(taskName, TaskItem.WORKING);
                 notifyAdapters();
             }
@@ -250,7 +248,7 @@ public class HomeFragment extends Fragment {
             View view = LayoutInflater.from(context)
                     .inflate(android.R.layout.simple_list_item_2, viewGroup, false);
             view.setBackgroundColor(Color.CYAN);
-            final String taskName = cursor.getString(DatabaseHelper.TASK_TABLE_NAME_INDEX);
+            final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
             taskToView.put(taskName, (TextView) view.findViewById(android.R.id.text2));
             if (!taskToRunnable.containsKey(taskName)) {
                 Runnable runnable = new displayTimerOnView(taskName);
@@ -262,7 +260,7 @@ public class HomeFragment extends Fragment {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    float timeAdded = (float)(System.currentTimeMillis() - taskToTime.get(taskName)) / 3600000;
+                    float timeAdded = TimeUtils.millisToHour(taskToTime.get(taskName));
                     int hour = (int) timeAdded;
                     int minute = (int) ((timeAdded - hour) * 60);
                     new TimePickerDialog(getContext(),
@@ -273,13 +271,12 @@ public class HomeFragment extends Fragment {
                             float timeAdded = hourOfDay + (float)minute / 60;
                             db.addTimeByName(taskName, timeAdded);
                             db.appendTransaction(getCurrentDate(), taskName, timeAdded);
-                            Toast.makeText(getContext(), String.valueOf(timeAdded), Toast.LENGTH_SHORT).show();
-                            handler.removeCallbacks(taskToRunnable.get(taskName));
-                            taskToView.remove(taskName);
-                            taskToRunnable.remove(taskName);
-                            taskToTime.remove(taskName);
                             db.updateState(taskName, TaskItem.IDLE);
                             notifyAdapters();
+
+                            Toast.makeText(getContext(), getCurrentDate(), Toast.LENGTH_SHORT).show();
+                            handler.removeCallbacks(taskToRunnable.get(taskName));
+                            clearTaskResource(taskName);
                         }
                     }, hour, minute, true).show();
                 }
@@ -289,12 +286,18 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            view.setBackgroundColor(cursor.getInt(DatabaseHelper.TASK_TABLE_COLOR_INDEX));
+            view.setBackgroundColor(DatabaseHelper.getColorInTaskTable(cursor));
             TextView taskView = view.findViewById(android.R.id.text1);
-            String taskName = cursor.getString(DatabaseHelper.TASK_TABLE_NAME_INDEX);
+            String taskName = DatabaseHelper.getNameInTaskTable(cursor);
             taskView.setText(taskName);
             handler.post(taskToRunnable.get(taskName));
         }
+    }
+
+    private void clearTaskResource(String taskName) {
+        taskToView.remove(taskName);
+        taskToRunnable.remove(taskName);
+        taskToTime.remove(taskName);
     }
 
     public class DragContext {
@@ -316,7 +319,7 @@ public class HomeFragment extends Fragment {
             int seconds = (int) (millis / 1000);
             int minutes = seconds / 60;
             seconds = seconds % 60;
-            taskToView.get(taskName).setText(String.format("%d:%02d", minutes, seconds));
+            taskToView.get(taskName).setText(TimeUtils.getCountingTime(minutes, seconds));
             handler.post(this);
         }
     }

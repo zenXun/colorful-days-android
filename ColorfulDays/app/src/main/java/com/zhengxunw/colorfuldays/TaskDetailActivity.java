@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
+import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 
 public class TaskDetailActivity extends AppCompatActivity {
 

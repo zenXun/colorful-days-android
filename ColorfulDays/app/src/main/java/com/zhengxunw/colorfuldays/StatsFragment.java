@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
+import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+
 public class StatsFragment extends Fragment {
 
     public static final String TASK_NAME_KEY = "taskName";
@@ -71,11 +74,11 @@ public class StatsFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            view.setBackgroundColor(cursor.getInt(DatabaseHelper.TASK_TABLE_COLOR_INDEX));
+            view.setBackgroundColor(cursor.getInt(DatabaseConstants.TASK_TABLE_COLOR_INDEX));
             TextView task = view.findViewById(android.R.id.text1);
-            final String taskName = cursor.getString(DatabaseHelper.TASK_TABLE_NAME_INDEX);
-            final float hour = cursor.getFloat(DatabaseHelper.TASK_TABLE_HOUR_INDEX);
-            final int color = cursor.getInt(DatabaseHelper.TASK_TABLE_COLOR_INDEX);
+            final String taskName = cursor.getString(DatabaseConstants.TASK_TABLE_NAME_INDEX);
+            final float hour = cursor.getFloat(DatabaseConstants.TASK_TABLE_HOUR_INDEX);
+            final int color = cursor.getInt(DatabaseConstants.TASK_TABLE_COLOR_INDEX);
             task.setText(taskName + " " + String.format("%.02f", hour) + " hours");
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
