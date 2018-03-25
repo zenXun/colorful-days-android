@@ -5,7 +5,6 @@ import android.icu.text.SimpleDateFormat;
 
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -17,7 +16,6 @@ public class TimeUtils {
 
     public static final DateFormat DATE_FORMAT_HOME = new SimpleDateFormat("EEE, d MMM yyyy");
     public static final DateFormat DATE_FORMAT_AS_KEY = new SimpleDateFormat("dd-MMM-yyyy");
-    public static final DateTimeFormatter LOCALDATE_FORMAT_AS_KEY = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
     public static final DateFormat DATE_FORMAT_CALENDAR_TITLE = new SimpleDateFormat("MMM yyyy");
 
     public static String getCountingTime(int minutes, int seconds) {
@@ -28,20 +26,12 @@ public class TimeUtils {
         return (float)(System.currentTimeMillis() - startTime) / 3600000;
     }
 
-    public static LocalDate toLocalDate(String dateKey) {
-        return TimeUtils.toLocalDate(TimeUtils.toCalendar(dateKey));
-    }
-
     public static String toDateStr(LocalDate date) {
-        return TimeUtils.LOCALDATE_FORMAT_AS_KEY.format(date);
+        return DATE_FORMAT_AS_KEY.format(date);
     }
 
     public static String toDateStr(Calendar calendar) {
         return TimeUtils.DATE_FORMAT_AS_KEY.format(calendar.getTime());
-    }
-
-    private static LocalDate toLocalDate(Calendar calendar) {
-        return LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
     }
 
     public static Calendar toCalendar(String dateStr) {

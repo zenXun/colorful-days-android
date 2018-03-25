@@ -32,23 +32,23 @@ public class MainActivity extends AppCompatActivity {
         getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
 
-        db.insertData(new TaskItem("READING", 20, Color.BLUE));
-
-        Calendar c = Calendar.getInstance();
-        c.set(2018, 2, 10, 0, 0);
-        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
-        c.set(2018, 2, 11, 0, 0);
-        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
-        c.set(2018, 2, 11, 0, 0);
-        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
-        c.set(2018, 2, 12, 0, 0);
-        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
-        c.set(2018, 2, 13, 0, 0);
-        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
-        c.set(2018, 2, 14, 0, 0);
-        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
-        c.set(2018, 2, 15, 0, 0);
-        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        db.insertData(new TaskItem("READING", 20, Color.BLUE));
+//
+//        Calendar c = Calendar.getInstance();
+//        c.set(2018, 2, 10, 0, 0);
+//        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
+//        c.set(2018, 2, 11, 0, 0);
+//        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
+//        c.set(2018, 2, 11, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 12, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 13, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 14, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        c.set(2018, 2, 15, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
 
 
         db.populateColorTable();
