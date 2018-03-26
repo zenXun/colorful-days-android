@@ -3,6 +3,7 @@ package com.zhengxunw.colorfuldays;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -11,13 +12,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.zhengxunw.colorfuldays.database.DatabaseConstants;
+import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_COLOR_KEY;
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_HOUR_KEY;
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_NAME_KEY;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR;
 
 public class StatsFragment extends Fragment {
 
@@ -56,6 +56,12 @@ public class StatsFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //super.onSaveInstanceState(outState);
+    }
+
+
+    @Override
     public void onResume() {
         super.onResume();
         allTaskListAdapter.changeCursor(db.getTaskContentsByState(TaskItem.ALL));
@@ -81,6 +87,9 @@ public class StatsFragment extends Fragment {
             final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
             final float hour = DatabaseHelper.getHourInTaskColor(cursor);
             task.setText(taskName + " " + String.format("%.02f", hour) + " hours");
+            if (!CustomizedColorUtils.isLightColor(color)) {
+                task.setTextColor(Color.WHITE);
+            }
             view.setBackgroundColor(color);
 
             view.setOnClickListener(new View.OnClickListener() {

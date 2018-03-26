@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
@@ -56,6 +57,11 @@ public class HomeFragment extends Fragment {
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -217,9 +223,13 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            view.setBackgroundColor(DatabaseHelper.getColorInTaskTable(cursor));
+            int bgColor = DatabaseHelper.getColorInTaskTable(cursor);
+            view.setBackgroundColor(bgColor);
             TextView task = view.findViewById(android.R.id.text1);
             task.setText(DatabaseHelper.getNameInTaskTable(cursor));
+            if (!CustomizedColorUtils.isLightColor(bgColor)) {
+                task.setTextColor(Color.WHITE);
+            }
         }
     }
 

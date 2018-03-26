@@ -197,19 +197,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void populateColorTable() {
         Cursor lastTransCursor = getLastTransactionEntry();
+        lastTransCursor.moveToFirst();
         // transaction doesn't exist, no need to populate color
         if (lastTransCursor.getCount() == 0) {
             return;
         }
-
         String lastTransDate = lastTransCursor.getString(lastTransCursor.getColumnIndex(TRANSACTION_TABLE_DATE));
         lastTransCursor.close();
 
         Cursor lastColorEntryCursor = getLastCalendarEntry();
+        lastColorEntryCursor.moveToFirst();
         // transaction exists but color doesn't exist, populate color anyway
         // need to populate dates based on all transactions
         if (lastColorEntryCursor.getCount() == 0) {
             Cursor firstTransEntryCursor = getFirstTransactionEntry();
+            firstTransEntryCursor.moveToFirst();
             String firstTransDate = firstTransEntryCursor.getString(firstTransEntryCursor.getColumnIndex(TRANSACTION_TABLE_DATE));
             populate(firstTransDate, lastTransDate);
             return;
@@ -247,13 +249,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int color = 0;
         int count = 1;
         try (Cursor dateCursor = queryTransactionByDate(key)) {
+            dateCursor.moveToFirst();
             if (dateCursor.getCount() > 0) {
-                dateCursor.moveToFirst();
                 do {
                     String taskName = dateCursor.getString(dateCursor.getColumnIndex(TRANSACTION_TABLE_TASK_NAME));
                     Cursor taskCursor = getTaskColor(taskName);
+                    taskCursor.moveToFirst();
                     if (taskCursor.getCount() > 0) {
-                        taskCursor.moveToFirst();
                         color += getColorInTaskTable(taskCursor);
                         count++;
                         color /= count;
