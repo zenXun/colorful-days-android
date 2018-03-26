@@ -29,16 +29,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // clear DB
-        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
-        DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
+        // getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
 
-//        db.insertData(new TaskItem("READING", 20, Color.BLUE));
+        DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
+//        db.insertData(new TaskItem("Reading", 20, Color.parseColor("#005DFF")));
+//        db.insertData(new TaskItem("Workout", 30, Color.parseColor("#F78800")));
+//        db.insertData(new TaskItem("Android", 16, Color.parseColor("#FF2C00")));
+//        db.insertData(new TaskItem("Guitar", 5.2f, Color.parseColor("#00D75F")));
+//        db.insertData(new TaskItem("Finance", 19, Color.parseColor("#C6005D")));
+//        db.insertData(new TaskItem("Blockchain", 4.1f, Color.parseColor("#FF00D3")));
+//        db.insertData(new TaskItem("Data Engineer", 26, Color.parseColor("#00E5CF")));
+
 //
 //        Calendar c = Calendar.getInstance();
 //        c.set(2018, 2, 10, 0, 0);
-//        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
+//        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
 //        c.set(2018, 2, 11, 0, 0);
-//        db.appendColor(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
+//        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
 //        c.set(2018, 2, 11, 0, 0);
 //        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
 //        c.set(2018, 2, 12, 0, 0);

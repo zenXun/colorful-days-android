@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,6 +15,10 @@ import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_COLOR_KEY;
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_HOUR_KEY;
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_NAME_KEY;
+
 public class TaskDetailActivity extends AppCompatActivity {
 
     private EditText mEditTaskName;
@@ -26,23 +31,25 @@ public class TaskDetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        cp = new ColorPicker(TaskDetailActivity.this);
 
         super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
-
-        taskHour = intent.getFloatExtra(StatsFragment.TASK_NAME_KEY, 0);
-        taskName = intent.getStringExtra(StatsFragment.TASK_HOUR_KEY);
-        taskColor = intent.getIntExtra(StatsFragment.TASK_COLOR_KEY, 0);
-
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        cp = new ColorPicker(TaskDetailActivity.this);
         mEditTaskName = (EditText) findViewById(R.id.edit_task_name);
-        mEditTaskName.setText(taskName);
         mEditTaskInitHour = (EditText) findViewById(R.id.edit_task_init_hour);
-        mEditTaskInitHour.setText(String.valueOf(taskHour));
         mButton = (Button) findViewById(R.id.button);
+
+        Intent intent = getIntent();
+
+        taskHour = intent.getFloatExtra(INTENT_EXTRA_TASK_HOUR_KEY, 0);
+        taskName = intent.getStringExtra(INTENT_EXTRA_TASK_NAME_KEY);
+        taskColor = intent.getIntExtra(INTENT_EXTRA_TASK_COLOR_KEY, Color.WHITE);
+
+        mEditTaskName.setText(taskName);
+        mEditTaskInitHour.setText(String.valueOf(taskHour));
         mButton.setBackgroundColor(taskColor);
+
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

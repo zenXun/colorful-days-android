@@ -32,6 +32,7 @@ public class CustomizedCalendarView extends LinearLayout {
     private static final int DAYS_COUNT = 42;
 
     // current displayed month
+    private Date todayDate = Calendar.getInstance().getTime();
     private Calendar currentDate = Calendar.getInstance();
 
     private DatabaseHelper db;
@@ -155,7 +156,7 @@ public class CustomizedCalendarView extends LinearLayout {
 
     private int getViewColor(Date date) {
         String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
-        Cursor cursor = db.queryColorByDate(dateKey);
+        Cursor cursor = db.queryCalendarColorByDate(dateKey);
         int color = Color.WHITE;
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
@@ -183,7 +184,7 @@ public class CustomizedCalendarView extends LinearLayout {
             int year = date.getYear();
 
             // today
-            Date today = currentDate.getTime();
+            Date todayInThisMonth = currentDate.getTime();
 
             // inflate item if it does not exist yet
             if (view == null) {
@@ -194,12 +195,14 @@ public class CustomizedCalendarView extends LinearLayout {
             ((TextView)view).setTypeface(null, Typeface.NORMAL);
             ((TextView)view).setTextColor(Color.BLACK);
 
-            if (month != today.getMonth() || year != today.getYear()) {
+            if (month != todayInThisMonth.getMonth() || year != todayInThisMonth.getYear()) {
                 // if this day is outside current month, grey it out
                 ((TextView)view).setTextColor(getResources().getColor(R.color.greyed_out));
             } else {
                 view.setBackgroundColor(getViewColor(date));
-                if (day == today.getDate()) {
+                if (day == todayDate.getDate() &&
+                        month == todayDate.getMonth() &&
+                        year == todayDate.getYear()) {
                     // if it is today, set it to blue/bold
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
                     ((TextView) view).setTextColor(getResources().getColor(R.color.today));

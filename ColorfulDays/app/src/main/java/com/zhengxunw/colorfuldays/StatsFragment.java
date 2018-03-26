@@ -14,11 +14,12 @@ import android.widget.TextView;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 
-public class StatsFragment extends Fragment {
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_COLOR_KEY;
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_HOUR_KEY;
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_NAME_KEY;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR;
 
-    public static final String TASK_NAME_KEY = "taskName";
-    public static final String TASK_HOUR_KEY = "taskHour";
-    public static final String TASK_COLOR_KEY = "taskColor";
+public class StatsFragment extends Fragment {
 
     private AllTaskCursorAdapter allTaskListAdapter;
     private DatabaseHelper db;
@@ -74,19 +75,21 @@ public class StatsFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            view.setBackgroundColor(cursor.getInt(DatabaseConstants.TASK_TABLE_COLOR_INDEX));
             TextView task = view.findViewById(android.R.id.text1);
-            final String taskName = cursor.getString(DatabaseConstants.TASK_TABLE_NAME_INDEX);
-            final float hour = cursor.getFloat(DatabaseConstants.TASK_TABLE_HOUR_INDEX);
-            final int color = cursor.getInt(DatabaseConstants.TASK_TABLE_COLOR_INDEX);
+
+            final int color = DatabaseHelper.getColorInTaskTable(cursor);
+            final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
+            final float hour = DatabaseHelper.getHourInTaskColor(cursor);
             task.setText(taskName + " " + String.format("%.02f", hour) + " hours");
+            view.setBackgroundColor(color);
+
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                    intent.putExtra(TASK_NAME_KEY, taskName);
-                    intent.putExtra(TASK_HOUR_KEY, hour);
-                    intent.putExtra(TASK_COLOR_KEY, color);
+                    intent.putExtra(INTENT_EXTRA_TASK_NAME_KEY, taskName);
+                    intent.putExtra(INTENT_EXTRA_TASK_HOUR_KEY, hour);
+                    intent.putExtra(INTENT_EXTRA_TASK_COLOR_KEY, color);
                     startActivity(intent);
                 }
             });

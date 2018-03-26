@@ -9,28 +9,21 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.zhengxunw.colorfuldays.TaskItem;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_COLOR;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_COLOR_INDEX;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_DATE;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_DATE_INDEX;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.DATABASE_NAME;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_IS_IDLE;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR_INDEX;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_HOUR_INDEX;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_NAME;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_NAME_INDEX;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_HOUR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_DATE;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_DATE_INDEX;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME_INDEX;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getCalendarTableCreationSQL;
@@ -62,15 +55,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static String getNameInTaskTable(Cursor cursor) {
-        return cursor.getString(TASK_TABLE_NAME_INDEX);
+        return cursor.getString(cursor.getColumnIndex(TASK_TABLE_TASK_NAME));
     }
 
     public static int getColorInTaskTable(Cursor cursor) {
-        return cursor.getInt(TASK_TABLE_COLOR_INDEX);
+        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_COLOR));
+    }
+
+    public static float getHourInTaskColor(Cursor cursor) {
+        return cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
     }
 
     public static int getColorInColorTable(Cursor cursor) {
-        return cursor.getInt(CALENDAR_TABLE_COLOR_INDEX);
+        return cursor.getInt(cursor.getColumnIndex(CALENDAR_TABLE_COLOR));
     }
 
     @Override
@@ -122,7 +119,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String queryTime = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TASK_TABLE_NAME, TASK_TABLE_TASK_NAME, taskName);
         Cursor cursor = db.rawQuery(queryTime, null);
         cursor.moveToFirst();
-        float time = cursor.getFloat(TASK_TABLE_HOUR_INDEX);
+        float time = cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
         cursor.close();
         return time;
     }
@@ -177,19 +174,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * color table
      * */
-    public boolean appendColor(String date, int colorCode) {
+    public boolean appendCalendarEntry(String date, int colorCode) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(CALENDAR_TABLE_DATE, date);
         contentValues.put(CALENDAR_TABLE_COLOR, colorCode);
         return db.insert(CALENDAR_TABLE_NAME, null, contentValues) != -1;
     }
 
-    public Cursor queryColorByDate(String date) {
+    public Cursor queryCalendarColorByDate(String date) {
         String sql = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE, date);
         return db.rawQuery(sql, null);
     }
 
-    private Cursor getLastColorEntry() {
+    private Cursor getLastCalendarEntry() {
         String sql = String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE);
         return db.rawQuery(sql, null);
     }
@@ -199,35 +196,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * */
 
     public void populateColorTable() {
-        Cursor lastTransactionEntryCursor = getLastTransactionEntry();
+        Cursor lastTransCursor = getLastTransactionEntry();
         // transaction doesn't exist, no need to populate color
-        if (lastTransactionEntryCursor.getCount() == 0) {
+        if (lastTransCursor.getCount() == 0) {
             return;
         }
 
-        lastTransactionEntryCursor.moveToFirst();
-        String lastTransactionDate = lastTransactionEntryCursor.getString(TRANSACTION_TABLE_DATE_INDEX);
-        lastTransactionEntryCursor.close();
+        String lastTransDate = lastTransCursor.getString(lastTransCursor.getColumnIndex(TRANSACTION_TABLE_DATE));
+        lastTransCursor.close();
 
-        Cursor lastColorEntryCursor = getLastColorEntry();
+        Cursor lastColorEntryCursor = getLastCalendarEntry();
         // transaction exists but color doesn't exist, populate color anyway
         // need to populate dates based on all transactions
         if (lastColorEntryCursor.getCount() == 0) {
-            Cursor firstTransactionEntryCursor = getFirstTransactionEntry();
-            String firstTransactionDate = firstTransactionEntryCursor.getString(TRANSACTION_TABLE_DATE_INDEX);
-            firstTransactionDate.getClass();
-            populate(firstTransactionDate, lastTransactionDate);
+            Cursor firstTransEntryCursor = getFirstTransactionEntry();
+            String firstTransDate = firstTransEntryCursor.getString(firstTransEntryCursor.getColumnIndex(TRANSACTION_TABLE_DATE));
+            populate(firstTransDate, lastTransDate);
             return;
         }
 
-        lastColorEntryCursor.moveToFirst();
-        String lastColorDate = lastColorEntryCursor.getString(CALENDAR_TABLE_DATE_INDEX);
+        String lastColorDate = lastColorEntryCursor.getString(lastColorEntryCursor.getColumnIndex(CALENDAR_TABLE_DATE));
         lastColorEntryCursor.close();
 
         // transaction exists and color exists, check whether color is out-dated
         // need to populate dates from the last color date to the last transaction date
-        if (!lastTransactionDate.equals(lastColorDate)) {
-            populate(lastColorDate, lastTransactionDate);
+        if (!lastTransDate.equals(lastColorDate)) {
+            populate(lastColorDate, lastTransDate);
         }
     }
 
@@ -256,7 +250,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (dateCursor.getCount() > 0) {
                 dateCursor.moveToFirst();
                 do {
-                    String taskName = dateCursor.getString(TRANSACTION_TABLE_NAME_INDEX);
+                    String taskName = dateCursor.getString(dateCursor.getColumnIndex(TRANSACTION_TABLE_TASK_NAME));
                     Cursor taskCursor = getTaskColor(taskName);
                     if (taskCursor.getCount() > 0) {
                         taskCursor.moveToFirst();
@@ -269,7 +263,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        appendColor(key, color);
+        appendCalendarEntry(key, color);
     }
 
 }

@@ -35,7 +35,6 @@ public class HomeFragment extends Fragment {
     private TextView mTextDate;
     private IdleTaskCursorAdapter idleListAdapter;
     private WorkingTaskCursorAdapter workingListAdapter;
-    private DatabaseHelper db;
 
     private Handler handler = new Handler();
     private Map<String, Long> taskToTime = new HashMap<>();
@@ -67,7 +66,6 @@ public class HomeFragment extends Fragment {
         ListView idleTaskList = view.findViewById(R.id.idle_task_list);
         ListView workingTaskList = view.findViewById(R.id.working_task_list);
         mTextDate = view.findViewById(R.id.today_date);
-        db = DatabaseHelper.getInstance(getContext());
 
         View.OnDragListener taskDropListener = new View.OnDragListener() {
             @Override
@@ -84,12 +82,12 @@ public class HomeFragment extends Fragment {
 
         workingTaskList.setTag(Constants.WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDropListener);
-        workingListAdapter = new WorkingTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.WORKING));
+        workingListAdapter = new WorkingTaskCursorAdapter(getContext(), DatabaseHelper.getInstance(getContext()).getTaskContentsByState(TaskItem.WORKING));
         workingTaskList.setAdapter(workingListAdapter);
 
         idleTaskList.setTag(Constants.IDLE_TASK_TAG);
         idleTaskList.setOnDragListener(taskDropListener);
-        idleListAdapter = new IdleTaskCursorAdapter(getContext(), db.getTaskContentsByState(TaskItem.IDLE));
+        idleListAdapter = new IdleTaskCursorAdapter(getContext(), DatabaseHelper.getInstance(getContext()).getTaskContentsByState(TaskItem.IDLE));
         idleTaskList.setAdapter(idleListAdapter);
 
         displayCurrentDate();
@@ -112,9 +110,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void notifyAdapters() {
-        idleListAdapter.changeCursor(db.getTaskContentsByState(TaskItem.IDLE));
+        idleListAdapter.changeCursor(DatabaseHelper.getInstance(getContext()).getTaskContentsByState(TaskItem.IDLE));
         idleListAdapter.notifyDataSetChanged();
-        workingListAdapter.changeCursor(db.getTaskContentsByState(TaskItem.WORKING));
+        workingListAdapter.changeCursor(DatabaseHelper.getInstance(getContext()).getTaskContentsByState(TaskItem.WORKING));
         workingListAdapter.notifyDataSetChanged();
     }
 
@@ -177,8 +175,8 @@ public class HomeFragment extends Fragment {
                         @Override
                         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                             float timeAdded = hourOfDay + (float)minute / 60;
-                            db.addTimeByName(taskName, timeAdded);
-                            db.appendTransaction(getCurrentDate(), taskName, timeAdded);
+                            DatabaseHelper.getInstance(getContext()).addTimeByName(taskName, timeAdded);
+                            DatabaseHelper.getInstance(getContext()).appendTransaction(getCurrentDate(), taskName, timeAdded);
                             notifyAdapters();
                         }
                     }, 0, 0, true).show();
@@ -231,7 +229,7 @@ public class HomeFragment extends Fragment {
         String destListType = destView.getTag().toString();
         if (srcListType.equals(Constants.IDLE_TASK_TAG)) {
             if (destListType.equals(Constants.WORKING_TASK_TAG)) {
-                db.updateState(taskName, TaskItem.WORKING);
+                DatabaseHelper.getInstance(getContext()).updateState(taskName, TaskItem.WORKING);
                 notifyAdapters();
             }
         }
@@ -269,9 +267,9 @@ public class HomeFragment extends Fragment {
                         @Override
                         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                             float timeAdded = hourOfDay + (float)minute / 60;
-                            db.addTimeByName(taskName, timeAdded);
-                            db.appendTransaction(getCurrentDate(), taskName, timeAdded);
-                            db.updateState(taskName, TaskItem.IDLE);
+                            DatabaseHelper.getInstance(getContext()).addTimeByName(taskName, timeAdded);
+                            DatabaseHelper.getInstance(getContext()).appendTransaction(getCurrentDate(), taskName, timeAdded);
+                            DatabaseHelper.getInstance(getContext()).updateState(taskName, TaskItem.IDLE);
                             notifyAdapters();
 
                             Toast.makeText(getContext(), getCurrentDate(), Toast.LENGTH_SHORT).show();

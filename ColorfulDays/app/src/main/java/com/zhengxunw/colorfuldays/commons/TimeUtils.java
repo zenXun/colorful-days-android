@@ -26,10 +26,6 @@ public class TimeUtils {
         return (float)(System.currentTimeMillis() - startTime) / 3600000;
     }
 
-    public static String toDateStr(LocalDate date) {
-        return DATE_FORMAT_AS_KEY.format(date);
-    }
-
     public static String toDateStr(Calendar calendar) {
         return TimeUtils.DATE_FORMAT_AS_KEY.format(calendar.getTime());
     }
