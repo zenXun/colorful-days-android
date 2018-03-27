@@ -6,6 +6,10 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.AlignmentSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,19 +80,23 @@ public class StatsFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            return LayoutInflater.from(context).inflate(android.R.layout.select_dialog_item, viewGroup, false);
+            return LayoutInflater.from(context).inflate(R.layout.stats_item, viewGroup, false);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            TextView task = view.findViewById(android.R.id.text1);
+            TextView taskPartTV = view.findViewById(R.id.task_name_part);
+            TextView hourPartTV = view.findViewById(R.id.task_hour_part);
 
             final int color = DatabaseHelper.getColorInTaskTable(cursor);
             final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
             final float hour = DatabaseHelper.getHourInTaskColor(cursor);
-            task.setText(taskName + " " + String.format("%.02f", hour) + " hours");
+            String hourPart = String.format("%.02f", hour) + " hours";
+            taskPartTV.setText(taskName);
+            hourPartTV.setText(hourPart);
             if (!CustomizedColorUtils.isLightColor(color)) {
-                task.setTextColor(Color.WHITE);
+                taskPartTV.setTextColor(Color.WHITE);
+                hourPartTV.setTextColor(Color.WHITE);
             }
             view.setBackgroundColor(color);
 
