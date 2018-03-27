@@ -13,8 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
-import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
+import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 
 import java.util.Calendar;
 
@@ -39,23 +39,23 @@ public class MainActivity extends AppCompatActivity {
 //        db.insertData(new TaskItem("Finance", 19, Color.parseColor("#C6005D")));
 //        db.insertData(new TaskItem("Blockchain", 4.1f, Color.parseColor("#FF00D3")));
 //        db.insertData(new TaskItem("Data Engineer", 26, Color.parseColor("#00E5CF")));
-
 //
-//        Calendar c = Calendar.getInstance();
+//
+//        Calendar c = TimeUtils.getCurrentCalendar();
 //        c.set(2018, 2, 10, 0, 0);
 //        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
 //        c.set(2018, 2, 11, 0, 0);
 //        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
 //        c.set(2018, 2, 11, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Reading", 1);
 //        c.set(2018, 2, 12, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Workout", 1);
 //        c.set(2018, 2, 13, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Android", 1);
 //        c.set(2018, 2, 14, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Finance", 1);
 //        c.set(2018, 2, 15, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "READING", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Blockchain", 1);
 
 
         db.populateColorTable();
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
         homeFragment = HomeFragment.newInstance();
         statsFragment = StatsFragment.newInstance();
-        colorFragment = ColorFragment.newInstance();
+        colorFragment = CalendarFragment.newInstance();
 
         // show home fragment
         fragmentManager.beginTransaction().replace(R.id.content, homeFragment).commit();

@@ -5,21 +5,17 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
-
-import java.util.Date;
-import java.util.HashSet;
 
 
-public class ColorFragment extends Fragment {
+public class CalendarFragment extends Fragment {
 
-    public ColorFragment() {
+    public CalendarFragment() {
         // Required empty public constructor
     }
 
     // TODO: Rename and change types and number of parameters
-    public static ColorFragment newInstance() {
-        ColorFragment fragment = new ColorFragment();
+    public static CalendarFragment newInstance() {
+        CalendarFragment fragment = new CalendarFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;

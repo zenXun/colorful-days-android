@@ -6,6 +6,7 @@ import android.icu.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -17,6 +18,18 @@ public class TimeUtils {
     public static final DateFormat DATE_FORMAT_HOME = new SimpleDateFormat("EEE, d MMM yyyy");
     public static final DateFormat DATE_FORMAT_AS_KEY = new SimpleDateFormat("dd-MMM-yyyy");
     public static final DateFormat DATE_FORMAT_CALENDAR_TITLE = new SimpleDateFormat("MMM yyyy");
+
+    public static Date getTodayDate() {
+        return Calendar.getInstance(Locale.US).getTime();
+    }
+
+    public static Calendar getCurrentCalendar() {
+        return Calendar.getInstance(Locale.US);
+    }
+
+    public static String getCurrentDateKey() {
+        return DATE_FORMAT_AS_KEY.format(getTodayDate());
+    }
 
     public static String getCountingTime(int minutes, int seconds) {
         return String.format(Locale.US, "%d:%02d", minutes, seconds);

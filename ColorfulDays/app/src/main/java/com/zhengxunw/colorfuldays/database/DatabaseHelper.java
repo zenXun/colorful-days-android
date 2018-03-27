@@ -66,6 +66,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
     }
 
+    public static String getNameInTransTable(Cursor cursor) {
+        return cursor.getString(cursor.getColumnIndex(TRANSACTION_TABLE_TASK_NAME));
+    }
+
     public static int getColorInColorTable(Cursor cursor) {
         return cursor.getInt(cursor.getColumnIndex(CALENDAR_TABLE_COLOR));
     }
@@ -101,6 +105,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(TASK_TABLE_NAME, taskItem.toContentValues(), where, null) != -1;
     }
 
+    public boolean deleteTask(String taskName) {
+        String whereInTask = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
+        String whereInTrans = String.format("%s='%s'", TRANSACTION_TABLE_TASK_NAME, taskName);
+        return (db.delete(TASK_TABLE_NAME, whereInTask, null) != -1) &&
+                (db.delete(TRANSACTION_TABLE_NAME, whereInTrans, null) != -1);
+    }
+
     public boolean removeTaskByName(String taskName) {
         String where = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
         return db.delete(TASK_TABLE_NAME, where, null) > 0;
@@ -111,8 +122,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(TASK_TABLE_TASK_HOUR, getTime(taskName) + timeAdded);
         String where = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
         db.update(TASK_TABLE_NAME, contentValues, where, null);
-
-
     }
 
     public float getTime(String taskName) {
@@ -229,7 +238,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private void populate(String startDateKey, String endDateKey) {
         for (String key : getKeysToBePopulated(startDateKey, endDateKey)) {
-            populateColorTableOnDate(key);
+            appendCalendarEntry(key, generateColorOnDate(key));
         }
     }
 
@@ -245,14 +254,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return ret;
     }
 
-    private void populateColorTableOnDate(String key) {
+    public int generateColorOnDate(String key) {
         int color = 0;
         int count = 1;
         try (Cursor dateCursor = queryTransactionByDate(key)) {
             dateCursor.moveToFirst();
             if (dateCursor.getCount() > 0) {
                 do {
-                    String taskName = dateCursor.getString(dateCursor.getColumnIndex(TRANSACTION_TABLE_TASK_NAME));
+                    String taskName = getNameInTransTable(dateCursor);
                     Cursor taskCursor = getTaskColor(taskName);
                     taskCursor.moveToFirst();
                     if (taskCursor.getCount() > 0) {
@@ -264,8 +273,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 } while (dateCursor.moveToNext());
             }
         }
-
-        appendCalendarEntry(key, color);
+        return color;
     }
 
 }

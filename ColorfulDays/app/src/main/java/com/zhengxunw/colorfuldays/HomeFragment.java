@@ -123,7 +123,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void displayCurrentDate() {
-        Date currentTime = Calendar.getInstance().getTime();
+        Date currentTime = TimeUtils.getTodayDate();
         mTextDate.setText(TimeUtils.DATE_FORMAT_HOME.format(currentTime));
     }
 

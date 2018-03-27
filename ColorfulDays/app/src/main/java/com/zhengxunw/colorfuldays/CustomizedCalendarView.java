@@ -32,8 +32,7 @@ public class CustomizedCalendarView extends LinearLayout {
     private static final int DAYS_COUNT = 42;
 
     // current displayed month
-    private Date todayDate = Calendar.getInstance().getTime();
-    private Calendar currentDate = Calendar.getInstance();
+    private Calendar currentDate = TimeUtils.getCurrentCalendar();
 
     private DatabaseHelper db;
 
@@ -125,6 +124,21 @@ public class CustomizedCalendarView extends LinearLayout {
      * Display dates correctly in grid
      */
     public void updateCalendar() {
+
+        // update grid
+        grid.setAdapter(new CalendarAdapter(getContext(), getCalendarCells()));
+
+        // update title
+        txtDate.setText(TimeUtils.DATE_FORMAT_CALENDAR_TITLE.format(currentDate.getTime()));
+
+        // set header color according to current season
+        int season = monthSeason[currentDate.get(Calendar.MONTH)];
+        int color = rainbow[season];
+
+        header.setBackgroundColor(getResources().getColor(color));
+    }
+
+    private ArrayList<Date> getCalendarCells() {
         ArrayList<Date> cells = new ArrayList<>();
         Calendar calendar = (Calendar)currentDate.clone();
 
@@ -140,29 +154,22 @@ public class CustomizedCalendarView extends LinearLayout {
             cells.add(calendar.getTime());
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
-
-        // update grid
-        grid.setAdapter(new CalendarAdapter(getContext(), cells));
-
-        // update title
-        txtDate.setText(TimeUtils.DATE_FORMAT_CALENDAR_TITLE.format(currentDate.getTime()));
-
-        // set header color according to current season
-        int season = monthSeason[currentDate.get(Calendar.MONTH)];
-        int color = rainbow[season];
-
-        header.setBackgroundColor(getResources().getColor(color));
+        return cells;
     }
 
     private int getViewColor(Date date) {
         String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
         Cursor cursor = db.queryCalendarColorByDate(dateKey);
         int color = Color.WHITE;
+        cursor.moveToFirst();
         if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
             color = DatabaseHelper.getColorInColorTable(cursor);
         }
         return color;
+    }
+
+    private int generateTodayColor() {
+        return DatabaseHelper.getInstance(getContext()).generateColorOnDate(TimeUtils.getCurrentDateKey());
     }
 
     private class CalendarAdapter extends ArrayAdapter<Date> {
@@ -177,15 +184,6 @@ public class CustomizedCalendarView extends LinearLayout {
 
         @Override
         public View getView(int position, View view, ViewGroup parent) {
-            // day in question
-            Date date = getItem(position);
-            int day = date.getDate();
-            int month = date.getMonth();
-            int year = date.getYear();
-
-            // today
-            Date todayInThisMonth = currentDate.getTime();
-
             // inflate item if it does not exist yet
             if (view == null) {
                 view = inflater.inflate(R.layout.calendar_day, parent, false);
@@ -195,17 +193,27 @@ public class CustomizedCalendarView extends LinearLayout {
             ((TextView)view).setTypeface(null, Typeface.NORMAL);
             ((TextView)view).setTextColor(Color.BLACK);
 
+            // day in question
+            Date date = getItem(position);
+            int day = date.getDate();
+            int month = date.getMonth();
+            int year = date.getYear();
+
+            // today
+            Date todayInThisMonth = currentDate.getTime();
+            Date todayDate = Calendar.getInstance().getTime();
+
             if (month != todayInThisMonth.getMonth() || year != todayInThisMonth.getYear()) {
                 // if this day is outside current month, grey it out
                 ((TextView)view).setTextColor(getResources().getColor(R.color.greyed_out));
             } else {
-                view.setBackgroundColor(getViewColor(date));
-                if (day == todayDate.getDate() &&
-                        month == todayDate.getMonth() &&
-                        year == todayDate.getYear()) {
-                    // if it is today, set it to blue/bold
+                // if it is today, set it to blue/bold
+                if (day == todayDate.getDate() && month == todayDate.getMonth() && year == todayDate.getYear()) {
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
                     ((TextView) view).setTextColor(getResources().getColor(R.color.today));
+                    view.setBackgroundColor(generateTodayColor());
+                } else {
+                    view.setBackgroundColor(getViewColor(date));
                 }
             }
 

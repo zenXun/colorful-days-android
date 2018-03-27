@@ -59,6 +59,9 @@ public class TaskDetailActivity extends AppCompatActivity {
         if (!isNewTask) {
             mEditTaskInitHour.setInputType(0);
             mEditTaskName.setInputType(0);
+            deleteTaskBtn.setClickable(true);
+        } else {
+            deleteTaskBtn.setClickable(false);
         }
         mEditTaskName.setText(taskName);
         mEditTaskInitHour.setText(String.valueOf(taskHour));
@@ -82,7 +85,8 @@ public class TaskDetailActivity extends AppCompatActivity {
         deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
+                DatabaseHelper.getInstance(getApplicationContext()).deleteTask(taskName);
+                onBackPressed();
             }
         });
 
