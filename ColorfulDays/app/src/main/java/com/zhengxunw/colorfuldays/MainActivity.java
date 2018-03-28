@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 //        db.insertData(new TaskItem("Data Engineer", 26, Color.parseColor("#00E5CF")));
 //
 //
-//        Calendar c = TimeUtils.getCurrentCalendar();
+        Calendar c = TimeUtils.getCurrentCalendar();
 //        c.set(2018, 2, 10, 0, 0);
 //        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
 //        c.set(2018, 2, 11, 0, 0);

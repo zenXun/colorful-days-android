@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -33,8 +34,6 @@ public class CustomizedCalendarView extends LinearLayout {
 
     // current displayed month
     private Calendar currentDate = TimeUtils.getCurrentCalendar();
-
-    private DatabaseHelper db;
 
     // internal components
     private LinearLayout header;
@@ -75,7 +74,6 @@ public class CustomizedCalendarView extends LinearLayout {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.control_calendar, this);
 
-        db = DatabaseHelper.getInstance(getContext());
         assignUiElements();
         assignClickHandlers();
 
@@ -115,7 +113,9 @@ public class CustomizedCalendarView extends LinearLayout {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Date date = (Date) adapterView.getItemAtPosition(position);
-                Toast.makeText(getContext(), date.toString(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), DailyTaskHistoryActivity.class);
+                intent.putExtra("date", TimeUtils.DATE_FORMAT_AS_KEY.format(date));
+                getContext().startActivity(intent);
             }
         });
     }
@@ -155,17 +155,6 @@ public class CustomizedCalendarView extends LinearLayout {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
         return cells;
-    }
-
-    private int getViewColor(Date date) {
-        String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
-        Cursor cursor = db.queryCalendarColorByDate(dateKey);
-        int color = Color.WHITE;
-        cursor.moveToFirst();
-        if (cursor.getCount() > 0) {
-            color = DatabaseHelper.getColorInColorTable(cursor);
-        }
-        return color;
     }
 
     private int generateTodayColor() {
@@ -213,7 +202,8 @@ public class CustomizedCalendarView extends LinearLayout {
                     ((TextView) view).setTextColor(getResources().getColor(R.color.today));
                     view.setBackgroundColor(generateTodayColor());
                 } else {
-                    view.setBackgroundColor(getViewColor(date));
+                    String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
+                    view.setBackgroundColor(DatabaseHelper.getInstance(getContext()).getDayColor(dateKey));
                 }
             }
 

@@ -20,9 +20,5 @@
 
     </com.zhengxunw.colorfuldays.CustomizedCalendarView>
 
-    <ListView
-        android:id="@+id/today_tasks"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
 </LinearLayout>

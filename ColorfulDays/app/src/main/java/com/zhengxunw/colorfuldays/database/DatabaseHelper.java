@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Color;
 
 import com.zhengxunw.colorfuldays.TaskItem;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
@@ -200,9 +201,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(CALENDAR_TABLE_NAME, null, contentValues) != -1;
     }
 
-    public Cursor queryCalendarColorByDate(String date) {
+    public int getDayColor(String date) {
         String sql = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE, date);
-        return db.rawQuery(sql, null);
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+        if (cursor.getCount() > 0) {
+            return getColorInColorTable(cursor);
+        }
+        return Color.WHITE;
     }
 
     private Cursor getLastCalendarEntry() {

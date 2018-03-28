@@ -22,6 +22,9 @@
             android:name=".TaskDetailActivity"
             android:label="@string/title_activity_task_detail"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".DailyTaskHistoryActivity"
+            android:label="@string/daily_task_history_activity"
+            android:theme="@style/Theme.AppCompat"/>
     </application>
 
 </manifest>
