@@ -12,7 +12,9 @@ import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_COLOR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_DATE;
@@ -271,22 +273,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public int generateColorOnDate(String key) {
-        int color = 0;
-        int count = 1;
+        int finalColor = Color.WHITE;
+        float finalColorHour = 0;
         try (Cursor dateCursor = queryTransactionByDate(key)) {
             dateCursor.moveToFirst();
-            if (dateCursor.getCount() > 0) {
-                do {
-                    String taskName = getNameInTransTable(dateCursor);
-                    Integer curColor = getTaskColor(taskName);
-                    if (curColor != null) {
-                        count++;
-                        color /= count;
-                    }
-                } while (dateCursor.moveToNext());
+            if (dateCursor.getCount() == 0) {
+                return finalColor;
             }
+            do {
+                String taskName = getNameInTransTable(dateCursor);
+                float hour = getHourInTransTable(dateCursor);
+                Integer curColor = getTaskColor(taskName);
+                if (curColor != null && hour > 0) {
+                    finalColor = mixTwoColors(finalColor, curColor, finalColorHour / (finalColorHour + hour));
+                    finalColorHour += hour;
+                }
+            } while (dateCursor.moveToNext());
         }
-        return color;
+        return finalColor;
+    }
+
+    public static int mixTwoColors( int color1, int color2, float amount )
+    {
+        final byte ALPHA_CHANNEL = 24;
+        final byte RED_CHANNEL   = 16;
+        final byte GREEN_CHANNEL =  8;
+        final byte BLUE_CHANNEL  =  0;
+
+        final float inverseAmount = 1.0f - amount;
+
+        int a = ((int)(((float)(color1 >> ALPHA_CHANNEL & 0xff )*amount) +
+                ((float)(color2 >> ALPHA_CHANNEL & 0xff )*inverseAmount))) & 0xff;
+        int r = ((int)(((float)(color1 >> RED_CHANNEL & 0xff )*amount) +
+                ((float)(color2 >> RED_CHANNEL & 0xff )*inverseAmount))) & 0xff;
+        int g = ((int)(((float)(color1 >> GREEN_CHANNEL & 0xff )*amount) +
+                ((float)(color2 >> GREEN_CHANNEL & 0xff )*inverseAmount))) & 0xff;
+        int b = ((int)(((float)(color1 & 0xff )*amount) +
+                ((float)(color2 & 0xff )*inverseAmount))) & 0xff;
+
+        return a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b << BLUE_CHANNEL;
     }
 
 }
