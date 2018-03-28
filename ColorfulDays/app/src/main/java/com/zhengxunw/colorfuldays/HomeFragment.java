@@ -2,6 +2,7 @@ package com.zhengxunw.colorfuldays;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Canvas;
@@ -285,6 +286,13 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    private void switchTaskStateToIdle(String taskName) {
+        DatabaseHelper.getInstance(getContext()).updateState(taskName, TaskItem.IDLE);
+        handler.removeCallbacks(taskToRunnable.get(taskName));
+        clearTaskResource(taskName);
+        notifyAdapters();
+    }
+
 
     class taskOnTimeSetListener implements TimePickerDialog.OnTimeSetListener {
 
@@ -302,10 +310,8 @@ public class HomeFragment extends Fragment {
             DatabaseHelper.getInstance(getContext()).addTimeByName(taskName, timeAdded);
             DatabaseHelper.getInstance(getContext()).appendTransaction(TimeUtils.getCurrentDateKey(), taskName, timeAdded);
             if (!isIdle) {
-                DatabaseHelper.getInstance(getContext()).updateState(taskName, TaskItem.IDLE);
+                switchTaskStateToIdle(taskName);
                 Toast.makeText(getContext(), taskName + " " + timeAdded, Toast.LENGTH_SHORT).show();
-                handler.removeCallbacks(taskToRunnable.get(taskName));
-                clearTaskResource(taskName);
             }
             notifyAdapters();
         }
@@ -346,11 +352,16 @@ public class HomeFragment extends Fragment {
         @Override
         public void onClick(View view) {
             float timeAdded = TimeUtils.millisToHour(taskToTime.get(taskName));
-            int hour = (int) timeAdded;
-            int minute = (int) ((timeAdded - hour) * 60);
             TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
                     android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
-                    new taskOnTimeSetListener(taskName, false), hour, minute, true);
+                    new taskOnTimeSetListener(taskName, false), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
+            timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+                    switchTaskStateToIdle(taskName);
+                    Toast.makeText(getContext(), taskName + " is canceled", Toast.LENGTH_SHORT).show();
+                }
+            });
             timePickerDialog.setTitle(taskName);
             timePickerDialog.show();
         }
@@ -363,10 +374,7 @@ public class HomeFragment extends Fragment {
         }
         public void run() {
             long millis = System.currentTimeMillis() - taskToTime.get(taskName);
-            int seconds = (int) (millis / 1000);
-            int minutes = seconds / 60;
-            seconds = seconds % 60;
-            taskToView.get(taskName).setText(TimeUtils.getCountingTime(minutes, seconds));
+            taskToView.get(taskName).setText(TimeUtils.getCountingTime(TimeUtils.getMinute(millis), TimeUtils.getSecond(millis)));
             handler.post(this);
         }
     }

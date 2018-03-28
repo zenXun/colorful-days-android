@@ -39,6 +39,27 @@ public class TimeUtils {
         return (float)(System.currentTimeMillis() - startTime) / 3600000;
     }
 
+    public static int getHour(float timeInHour) {
+        return (int) timeInHour;
+
+    }
+
+    public static int getMinute(float timeInHour) {
+        return (int) ((timeInHour - getHour(timeInHour)) * 60);
+    }
+
+    public static int getHour(long timeInMillis) {
+        return (int) timeInMillis / 3600000;
+    }
+
+    public static int getMinute(long timeInMillis) {
+        return (int) (timeInMillis / 1000) / 60;
+    }
+
+    public static int getSecond(long timeInMillis) {
+        return (int) (timeInMillis / 1000) % 60;
+    }
+
     public static String toDateStr(Calendar calendar) {
         return TimeUtils.DATE_FORMAT_AS_KEY.format(calendar.getTime());
     }

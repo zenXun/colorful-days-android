@@ -70,6 +70,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.getString(cursor.getColumnIndex(TRANSACTION_TABLE_TASK_NAME));
     }
 
+    public static float getHourInTransTable(Cursor cursor) {
+        return cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
+    }
+
     public static int getColorInColorTable(Cursor cursor) {
         return cursor.getInt(cursor.getColumnIndex(CALENDAR_TABLE_COLOR));
     }
@@ -92,8 +96,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * task table
      */
 
-    public Cursor getTaskColor(String taskName) {
-        return db.rawQuery(getColorOnTaskNameSQL(taskName), null);
+    public Integer getTaskColor(String taskName) {
+        Cursor taskCursor = db.rawQuery(getColorOnTaskNameSQL(taskName), null);
+        taskCursor.moveToFirst();
+        if (taskCursor.getCount() > 0) {
+            return getColorInTaskTable(taskCursor);
+        }
+        taskCursor.close();
+        return null;
     }
 
     public boolean insertData(TaskItem taskItem) {
@@ -262,14 +272,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (dateCursor.getCount() > 0) {
                 do {
                     String taskName = getNameInTransTable(dateCursor);
-                    Cursor taskCursor = getTaskColor(taskName);
-                    taskCursor.moveToFirst();
-                    if (taskCursor.getCount() > 0) {
-                        color += getColorInTaskTable(taskCursor);
+                    Integer curColor = getTaskColor(taskName);
+                    if (curColor != null) {
                         count++;
                         color /= count;
                     }
-                    taskCursor.close();
                 } while (dateCursor.moveToNext());
             }
         }

@@ -20,10 +20,9 @@
 
     </com.zhengxunw.colorfuldays.CustomizedCalendarView>
 
-    <LinearLayout
-        android:id="@+id/today_transactions"
+    <ListView
+        android:id="@+id/today_tasks"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"></LinearLayout>
+        android:layout_height="match_parent" />
 
 </LinearLayout>
