@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -42,6 +41,34 @@ public class HomeFragment extends Fragment {
     private Map<String, TextView> taskToView = new HashMap<>();
     private Map<String, Runnable> taskToRunnable = new HashMap<>();
 
+    private View.OnDragListener idleTaskDragListener = new View.OnDragListener() {
+        @Override
+        public boolean onDrag(View view, DragEvent dragEvent) {
+            switch (dragEvent.getAction()) {
+                case DragEvent.ACTION_DRAG_STARTED:
+                    //Toast.makeText(getContext(), "Drag", Toast.LENGTH_SHORT).show();
+                    break;
+                case DragEvent.ACTION_DROP:
+                    dropOperation((DragContext) dragEvent.getLocalState(), view);
+            }
+            return true;
+        }
+    };
+
+    private View.OnDragListener taskDropListener = new View.OnDragListener() {
+
+        @Override
+        public boolean onDrag(View view, DragEvent dragEvent){
+            switch (dragEvent.getAction()) {
+                case DragEvent.ACTION_DROP:
+                    DragContext dragContext = (DragContext) dragEvent.getLocalState();
+                    dropOperation(dragContext, view);
+                    break;
+            }
+            return true;
+        }
+    };
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -72,19 +99,6 @@ public class HomeFragment extends Fragment {
         ListView idleTaskList = view.findViewById(R.id.idle_task_list);
         ListView workingTaskList = view.findViewById(R.id.working_task_list);
         mTextDate = view.findViewById(R.id.today_date);
-
-        View.OnDragListener taskDropListener = new View.OnDragListener() {
-            @Override
-            public boolean onDrag(View view, DragEvent dragEvent){
-                switch (dragEvent.getAction()) {
-                    case DragEvent.ACTION_DROP:
-                        DragContext dragContext = (DragContext) dragEvent.getLocalState();
-                        dropOperation(dragContext, view);
-                        break;
-                }
-                return true;
-            }
-        };
 
         workingTaskList.setTag(Constants.WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDropListener);
@@ -156,10 +170,6 @@ public class HomeFragment extends Fragment {
                 .edit().clear().apply();
     }
 
-    public static String getCurrentDate() {
-        return TimeUtils.DATE_FORMAT_AS_KEY.format(Calendar.getInstance().getTime());
-    }
-
     public class IdleTaskCursorAdapter extends android.widget.CursorAdapter {
 
         IdleTaskCursorAdapter(Context context, Cursor cursor) {
@@ -173,51 +183,9 @@ public class HomeFragment extends Fragment {
             final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
             view.setTag(Constants.IDLE_TASK_TAG);
             final DragContext dragContext = new DragContext(view);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    new TimePickerDialog(getContext(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
-                            new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                            float timeAdded = hourOfDay + (float)minute / 60;
-                            DatabaseHelper.getInstance(getContext()).addTimeByName(taskName, timeAdded);
-                            DatabaseHelper.getInstance(getContext()).appendTransaction(getCurrentDate(), taskName, timeAdded);
-                            notifyAdapters();
-                        }
-                    }, 0, 0, true).show();
-                }
-            });
-            view.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    view.startDragAndDrop(null, new View.DragShadowBuilder(view) {
-                        @Override
-                        public void onProvideShadowMetrics(Point outShadowSize, Point outShadowTouchPoint) {
-                            super.onProvideShadowMetrics(outShadowSize, outShadowTouchPoint);
-                        }
-
-                        @Override
-                        public void onDrawShadow(Canvas canvas) {
-                            super.onDrawShadow(canvas);
-                        }
-                    }, dragContext, 0);
-                    return true;
-                }
-            });
-            view.setOnDragListener(new View.OnDragListener() {
-                @Override
-                public boolean onDrag(View view, DragEvent dragEvent) {
-                    switch (dragEvent.getAction()) {
-                        case DragEvent.ACTION_DRAG_STARTED:
-                            //Toast.makeText(getContext(), "Drag", Toast.LENGTH_SHORT).show();
-                            break;
-                        case DragEvent.ACTION_DROP:
-                            dropOperation((DragContext) dragEvent.getLocalState(), view);
-                    }
-                    return true;
-                }
-            });
+            view.setOnClickListener(new idleTaskOnClickListener(taskName));
+            view.setOnLongClickListener(new idleTaskOnLongClickListener(dragContext));
+            view.setOnDragListener(idleTaskDragListener);
             return view;
         }
 
@@ -255,7 +223,6 @@ public class HomeFragment extends Fragment {
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
             View view = LayoutInflater.from(context)
                     .inflate(android.R.layout.simple_list_item_2, viewGroup, false);
-            view.setBackgroundColor(Color.CYAN);
             final String taskName = DatabaseHelper.getNameInTaskTable(cursor);
             taskToView.put(taskName, (TextView) view.findViewById(android.R.id.text2));
             if (!taskToRunnable.containsKey(taskName)) {
@@ -265,30 +232,7 @@ public class HomeFragment extends Fragment {
                     taskToTime.put(taskName, System.currentTimeMillis());
                 }
             }
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    float timeAdded = TimeUtils.millisToHour(taskToTime.get(taskName));
-                    int hour = (int) timeAdded;
-                    int minute = (int) ((timeAdded - hour) * 60);
-                    new TimePickerDialog(getContext(),
-                            android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
-                            new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                            float timeAdded = hourOfDay + (float)minute / 60;
-                            DatabaseHelper.getInstance(getContext()).addTimeByName(taskName, timeAdded);
-                            DatabaseHelper.getInstance(getContext()).appendTransaction(getCurrentDate(), taskName, timeAdded);
-                            DatabaseHelper.getInstance(getContext()).updateState(taskName, TaskItem.IDLE);
-                            notifyAdapters();
-
-                            Toast.makeText(getContext(), getCurrentDate(), Toast.LENGTH_SHORT).show();
-                            handler.removeCallbacks(taskToRunnable.get(taskName));
-                            clearTaskResource(taskName);
-                        }
-                    }, hour, minute, true).show();
-                }
-            });
+            view.setOnClickListener(new workingTaskOnClickListener(taskName));
             return view;
         }
 
@@ -296,8 +240,14 @@ public class HomeFragment extends Fragment {
         public void bindView(View view, Context context, Cursor cursor) {
             view.setBackgroundColor(DatabaseHelper.getColorInTaskTable(cursor));
             TextView taskView = view.findViewById(android.R.id.text1);
+            TextView timeView = view.findViewById(android.R.id.text2);
             String taskName = DatabaseHelper.getNameInTaskTable(cursor);
+            int color = DatabaseHelper.getColorInTaskTable(cursor);
             taskView.setText(taskName);
+            if (!CustomizedColorUtils.isLightColor(color)) {
+                taskView.setTextColor(Color.WHITE);
+                timeView.setTextColor(Color.WHITE);
+            }
             handler.post(taskToRunnable.get(taskName));
         }
     }
@@ -314,6 +264,95 @@ public class HomeFragment extends Fragment {
 
         DragContext(View view) {
             this.srcView = view;
+        }
+    }
+
+    class idleTaskOnClickListener implements View.OnClickListener {
+
+        String taskName;
+
+        idleTaskOnClickListener(String taskName) {
+            this.taskName = taskName;
+        }
+
+        @Override
+        public void onClick(View view) {
+            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
+                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+                    new taskOnTimeSetListener(taskName, true), 0, 0, true);
+            timePickerDialog.setTitle(taskName);
+            timePickerDialog.show();
+        }
+    }
+
+
+    class taskOnTimeSetListener implements TimePickerDialog.OnTimeSetListener {
+
+        String taskName;
+        boolean isIdle;
+
+        taskOnTimeSetListener(String taskName, boolean isIdle) {
+            this.taskName = taskName;
+            this.isIdle = isIdle;
+        }
+
+        @Override
+        public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+            float timeAdded = hourOfDay + (float)minute / 60;
+            DatabaseHelper.getInstance(getContext()).addTimeByName(taskName, timeAdded);
+            DatabaseHelper.getInstance(getContext()).appendTransaction(TimeUtils.getCurrentDateKey(), taskName, timeAdded);
+            if (!isIdle) {
+                DatabaseHelper.getInstance(getContext()).updateState(taskName, TaskItem.IDLE);
+                Toast.makeText(getContext(), taskName + " " + timeAdded, Toast.LENGTH_SHORT).show();
+                handler.removeCallbacks(taskToRunnable.get(taskName));
+                clearTaskResource(taskName);
+            }
+            notifyAdapters();
+        }
+    }
+
+    class idleTaskOnLongClickListener implements View.OnLongClickListener {
+
+        DragContext dragContext;
+
+        idleTaskOnLongClickListener(DragContext dragContext) {
+            this.dragContext = dragContext;
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            view.startDragAndDrop(null, new View.DragShadowBuilder(view) {
+                @Override
+                public void onProvideShadowMetrics(Point outShadowSize, Point outShadowTouchPoint) {
+                    super.onProvideShadowMetrics(outShadowSize, outShadowTouchPoint);
+                }
+
+                @Override
+                public void onDrawShadow(Canvas canvas) {
+                    super.onDrawShadow(canvas);
+                }
+            }, dragContext, 0);
+            return true;
+        }
+    }
+
+    class workingTaskOnClickListener implements View.OnClickListener {
+
+        String taskName;
+
+        workingTaskOnClickListener(String taskName) {
+            this.taskName = taskName;
+        }
+        @Override
+        public void onClick(View view) {
+            float timeAdded = TimeUtils.millisToHour(taskToTime.get(taskName));
+            int hour = (int) timeAdded;
+            int minute = (int) ((timeAdded - hour) * 60);
+            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
+                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+                    new taskOnTimeSetListener(taskName, false), hour, minute, true);
+            timePickerDialog.setTitle(taskName);
+            timePickerDialog.show();
         }
     }
 

@@ -19,7 +19,7 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="?android:attr/textColorAlertDialogListItem"
             android:ellipsize="marquee"
-            android:layout_weight="1" />
+            android:layout_weight="4" />
 
         <TextView
             android:id="@+id/task_hour_part"
