@@ -130,6 +130,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.delete(TASK_TABLE_NAME, where, null) > 0;
     }
 
+    public boolean removeTransactionsByName(String taskName) {
+        String where = String.format("%s='%s'", TRANSACTION_TABLE_TASK_NAME, taskName);
+        return db.delete(TRANSACTION_TABLE_NAME, where, null) > 0;
+    }
+
     public void addTimeByName(String taskName, float timeAdded) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(TASK_TABLE_TASK_HOUR, getTime(taskName) + timeAdded);

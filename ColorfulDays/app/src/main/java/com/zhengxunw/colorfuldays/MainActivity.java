@@ -29,12 +29,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // clear DB
-        // getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
+//        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
 
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
-//        db.insertData(new TaskItem("Reading", 20, Color.parseColor("#005DFF")));
+//        db.insertData(new TaskItem("Reading", 23, Color.parseColor("#005DFF")));
 //        db.insertData(new TaskItem("Workout", 30, Color.parseColor("#F78800")));
-//        db.insertData(new TaskItem("Android", 16, Color.parseColor("#FF2C00")));
+//        db.insertData(new TaskItem("Android", 20, Color.parseColor("#FF2C00")));
 //        db.insertData(new TaskItem("Guitar", 5.2f, Color.parseColor("#00D75F")));
 //        db.insertData(new TaskItem("Finance", 19, Color.parseColor("#C6005D")));
 //        db.insertData(new TaskItem("Blockchain", 4.1f, Color.parseColor("#FF00D3")));

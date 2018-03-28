@@ -54,14 +54,22 @@ public class TaskDetailActivity extends AppCompatActivity {
 
         if (taskName == null || taskName.trim().equals("")) {
             isNewTask = true;
+            deleteTaskBtn.setVisibility(View.INVISIBLE);
+            deleteTaskBtn.setClickable(false);
         }
 
         if (!isNewTask) {
             mEditTaskInitHour.setInputType(0);
             mEditTaskName.setInputType(0);
-            deleteTaskBtn.setClickable(true);
-        } else {
-            deleteTaskBtn.setClickable(false);
+
+            deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
+                    DatabaseHelper.getInstance(getApplicationContext()).removeTaskByName(taskName);
+                    DatabaseHelper.getInstance(getApplicationContext()).removeTransactionsByName(taskName);
+                }
+            });
         }
         mEditTaskName.setText(taskName);
         mEditTaskInitHour.setText(String.valueOf(taskHour));
@@ -81,15 +89,6 @@ public class TaskDetailActivity extends AppCompatActivity {
                 cp.show();
             }
         });
-
-        deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DatabaseHelper.getInstance(getApplicationContext()).deleteTask(taskName);
-                onBackPressed();
-            }
-        });
-
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
