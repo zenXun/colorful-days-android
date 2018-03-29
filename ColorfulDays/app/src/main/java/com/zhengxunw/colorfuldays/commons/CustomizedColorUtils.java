@@ -20,7 +20,11 @@ public class CustomizedColorUtils {
     }
 
     public static boolean isLightColor(int color) {
-        return ColorUtils.calculateLuminance(color) >= 0.5 || ((color >> 24 & 0xff) <= 128);
+        return ColorUtils.calculateLuminance(color) >= 0.5;
+    }
+
+    public static boolean isBgTransparent(int color) {
+        return (color >> 24 & 0xff) <= 30;
     }
 
     public static int mixColors(Map<Integer, Float> colorToHour) {

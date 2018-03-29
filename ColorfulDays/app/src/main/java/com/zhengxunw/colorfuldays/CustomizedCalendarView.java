@@ -208,7 +208,7 @@ public class CustomizedCalendarView extends LinearLayout {
                     bgColor = DatabaseHelper.getInstance(getContext()).getDayColor(dateKey);
                 }
                 view.setBackgroundColor(bgColor);
-                if (CustomizedColorUtils.isLightColor(bgColor)) {
+                if (CustomizedColorUtils.isLightColor(bgColor) || CustomizedColorUtils.isBgTransparent(bgColor)) {
                     ((TextView) view).setTextColor(Color.BLACK);
                 } else {
                     ((TextView) view).setTextColor(Color.WHITE);
