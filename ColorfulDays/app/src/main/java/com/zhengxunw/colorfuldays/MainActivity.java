@@ -34,11 +34,11 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
 //        db.insertData(new TaskItem("Reading", 23, Color.parseColor("#005DFF")));
 //        db.insertData(new TaskItem("Workout", 30, Color.parseColor("#F78800")));
-//        db.insertData(new TaskItem("Android", 20, Color.parseColor("#FF2C00")));
-//        db.insertData(new TaskItem("Guitar", 5.2f, Color.parseColor("#00D75F")));
-//        db.insertData(new TaskItem("Finance", 19, Color.parseColor("#C6005D")));
-//        db.insertData(new TaskItem("Blockchain", 4.1f, Color.parseColor("#FF00D3")));
-//        db.insertData(new TaskItem("Data Engineer", 26, Color.parseColor("#00E5CF")));
+//        db.insertData(new TaskItem("Android", 22, Color.parseColor("#FF2C00")));
+//        db.insertData(new TaskItem("Guitar", 5.2f, Color.parseColor("#5A6754")));
+//        db.insertData(new TaskItem("Finance", 20, Color.parseColor("#C6005D")));
+//        db.insertData(new TaskItem("Blockchain", 4.1f, Color.parseColor("#E69FC4")));
+//        db.insertData(new TaskItem("Data Engineer", 28, Color.parseColor("#00E5CF")));
 //
 //
 //        Calendar c = TimeUtils.getCurrentCalendar();

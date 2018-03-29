@@ -203,18 +203,15 @@ public class CustomizedCalendarView extends LinearLayout {
                 if (day == todayDate.getDate() && month == todayDate.getMonth() && year == todayDate.getYear()) {
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
                     bgColor = generateTodayColor();
-                    view.setBackgroundColor(bgColor);
                 } else {
                     String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
                     bgColor = DatabaseHelper.getInstance(getContext()).getDayColor(dateKey);
-                    view.setBackgroundColor(bgColor);
                 }
-                if (bgColor != Color.WHITE) {
-                    if (CustomizedColorUtils.isLightColor(bgColor)) {
-                        ((TextView) view).setTextColor(Color.BLACK);
-                    } else {
-                        ((TextView) view).setTextColor(Color.WHITE);
-                    }
+                view.setBackgroundColor(bgColor);
+                if (CustomizedColorUtils.isLightColor(bgColor)) {
+                    ((TextView) view).setTextColor(Color.BLACK);
+                } else {
+                    ((TextView) view).setTextColor(Color.WHITE);
                 }
             }
 

@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 
 import com.zhengxunw.colorfuldays.TaskItem;
+import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
 import java.util.ArrayList;
@@ -294,30 +295,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 }
             } while (dateCursor.moveToNext());
         }
-        return  mixColors(colorToHour);
-    }
-
-    private int mixColors(Map<Integer, Float> colorToHour) {
-        final byte ALPHA_CHANNEL = 24;
-        final byte RED_CHANNEL   = 16;
-        final byte GREEN_CHANNEL =  8;
-
-        float totalHour = 0;
-        for (Float hour : colorToHour.values()) {
-            totalHour += hour;
-        }
-        int a = 0, r = 0, g = 0, b = 0;
-        for (Map.Entry<Integer, Float> entry : colorToHour.entrySet()) {
-            int color = entry.getKey();
-            float hour = entry.getValue();
-            a += (int)((float)(color >> ALPHA_CHANNEL & 0xff) * hour / totalHour * (totalHour > 24 ? 1 : totalHour / 24));
-            r += (int)((float)(color >> RED_CHANNEL & 0xff) * hour / totalHour);
-            g += (int)((float)(color >> GREEN_CHANNEL & 0xff) * hour / totalHour);
-            b += (int)((float)(color & 0xff) * hour / totalHour);
-        }
-
-        int finalColor = a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b;
-        return finalColor == 0 ? Color.WHITE : finalColor;
+        return CustomizedColorUtils.mixColors(colorToHour);
     }
 
 }
