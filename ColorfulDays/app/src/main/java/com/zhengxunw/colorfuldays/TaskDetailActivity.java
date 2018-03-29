@@ -68,6 +68,7 @@ public class TaskDetailActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
                     DatabaseHelper.getInstance(getApplicationContext()).removeTaskByName(taskName);
                     DatabaseHelper.getInstance(getApplicationContext()).removeTransactionsByName(taskName);
+                    onBackPressed();
                 }
             });
         }

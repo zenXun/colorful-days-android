@@ -278,45 +278,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public int generateColorOnDate(String key) {
-        int finalColor = Color.WHITE;
-        float finalColorHour = 0;
+        Map<Integer, Float> colorToHour = new HashMap<>();
         try (Cursor dateCursor = queryTransactionByDate(key)) {
             dateCursor.moveToFirst();
             if (dateCursor.getCount() == 0) {
-                return finalColor;
+                return Color.WHITE;
             }
             do {
                 String taskName = getNameInTransTable(dateCursor);
                 float hour = getHourInTransTable(dateCursor);
                 Integer curColor = getTaskColor(taskName);
                 if (curColor != null && hour > 0) {
-                    finalColor = mixTwoColors(finalColor, curColor, finalColorHour / (finalColorHour + hour));
-                    finalColorHour += hour;
+                    float passHour = colorToHour.getOrDefault(curColor, 0f);
+                    colorToHour.put(curColor, passHour + hour);
                 }
             } while (dateCursor.moveToNext());
         }
-        return finalColor;
+        return  mixColors(colorToHour);
     }
 
-    public static int mixTwoColors( int color1, int color2, float amount )
-    {
+    private int mixColors(Map<Integer, Float> colorToHour) {
         final byte ALPHA_CHANNEL = 24;
         final byte RED_CHANNEL   = 16;
         final byte GREEN_CHANNEL =  8;
-        final byte BLUE_CHANNEL  =  0;
 
-        final float inverseAmount = 1.0f - amount;
+        float totalHour = 0;
+        for (Float hour : colorToHour.values()) {
+            totalHour += hour;
+        }
+        int a = 0, r = 0, g = 0, b = 0;
+        for (Map.Entry<Integer, Float> entry : colorToHour.entrySet()) {
+            int color = entry.getKey();
+            float hour = entry.getValue();
+            a += (int)((float)(color >> ALPHA_CHANNEL & 0xff) * hour / totalHour * (totalHour > 24 ? 1 : totalHour / 24));
+            r += (int)((float)(color >> RED_CHANNEL & 0xff) * hour / totalHour);
+            g += (int)((float)(color >> GREEN_CHANNEL & 0xff) * hour / totalHour);
+            b += (int)((float)(color & 0xff) * hour / totalHour);
+        }
 
-        int a = ((int)(((float)(color1 >> ALPHA_CHANNEL & 0xff )*amount) +
-                ((float)(color2 >> ALPHA_CHANNEL & 0xff )*inverseAmount))) & 0xff;
-        int r = ((int)(((float)(color1 >> RED_CHANNEL & 0xff )*amount) +
-                ((float)(color2 >> RED_CHANNEL & 0xff )*inverseAmount))) & 0xff;
-        int g = ((int)(((float)(color1 >> GREEN_CHANNEL & 0xff )*amount) +
-                ((float)(color2 >> GREEN_CHANNEL & 0xff )*inverseAmount))) & 0xff;
-        int b = ((int)(((float)(color1 & 0xff )*amount) +
-                ((float)(color2 & 0xff )*inverseAmount))) & 0xff;
-
-        return a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b << BLUE_CHANNEL;
+        int finalColor = a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b;
+        return finalColor == 0 ? Color.WHITE : finalColor;
     }
 
 }

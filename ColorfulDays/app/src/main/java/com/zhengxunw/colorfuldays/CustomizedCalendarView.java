@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.v4.graphics.ColorUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
@@ -197,13 +199,22 @@ public class CustomizedCalendarView extends LinearLayout {
                 ((TextView)view).setTextColor(getResources().getColor(R.color.greyed_out));
             } else {
                 // if it is today, set it to blue/bold
+                int bgColor;
                 if (day == todayDate.getDate() && month == todayDate.getMonth() && year == todayDate.getYear()) {
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
-                    ((TextView) view).setTextColor(getResources().getColor(R.color.today));
-                    view.setBackgroundColor(generateTodayColor());
+                    bgColor = generateTodayColor();
+                    view.setBackgroundColor(bgColor);
                 } else {
                     String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
-                    view.setBackgroundColor(DatabaseHelper.getInstance(getContext()).getDayColor(dateKey));
+                    bgColor = DatabaseHelper.getInstance(getContext()).getDayColor(dateKey);
+                    view.setBackgroundColor(bgColor);
+                }
+                if (bgColor != Color.WHITE) {
+                    if (CustomizedColorUtils.isLightColor(bgColor)) {
+                        ((TextView) view).setTextColor(Color.BLACK);
+                    } else {
+                        ((TextView) view).setTextColor(Color.WHITE);
+                    }
                 }
             }
 
