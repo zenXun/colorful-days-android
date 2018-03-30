@@ -41,12 +41,11 @@ public class CustomizedColorUtils {
         for (Map.Entry<Integer, Float> entry : colorToHour.entrySet()) {
             int color = entry.getKey();
             float hour = entry.getValue();
-            a += getAlphaByHour(hour) * hour / totalHour;
             r += (int)((float)(color >> RED_CHANNEL & 0xff) * hour / totalHour);
             g += (int)((float)(color >> GREEN_CHANNEL & 0xff) * hour / totalHour);
             b += (int)((float)(color & 0xff) * hour / totalHour);
         }
-        int finalColor = a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b;
+        int finalColor = getAlphaByHour(totalHour) << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b;
         return finalColor == 0 ? Color.WHITE : finalColor;
     }
 
