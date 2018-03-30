@@ -31,12 +31,20 @@ public class TimeUtils {
         return DATE_FORMAT_AS_KEY.format(getTodayDate());
     }
 
+    public static String getCountingTime(long millis) {
+        return getCountingTime(TimeUtils.getMinute(millis), TimeUtils.getSecond(millis));
+    }
+
     public static String getCountingTime(int minutes, int seconds) {
         return String.format(Locale.US, "%d:%02d", minutes, seconds);
     }
 
-    public static float millisToHour(long startTime) {
-        return (float)(System.currentTimeMillis() - startTime) / 3600000;
+    public static String getDisplayHour(float hour) {
+        return String.format(Locale.US, "%.02f", hour) + " hours";
+    }
+
+    public static float millisToHour(long duration) {
+        return (float) duration / 3600000;
     }
 
     public static int getHour(float timeInHour) {

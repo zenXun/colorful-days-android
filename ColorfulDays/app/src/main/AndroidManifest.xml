@@ -19,10 +19,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TaskDetailActivity"
+            android:name=".stats_module.TaskDetailActivity"
             android:label="@string/title_activity_task_detail"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".DailyTaskHistoryActivity"
+        <activity android:name=".calendar_module.DailyTaskHistoryActivity"
             android:label="@string/daily_task_history_activity"
             android:theme="@style/Theme.AppCompat"/>
     </application>

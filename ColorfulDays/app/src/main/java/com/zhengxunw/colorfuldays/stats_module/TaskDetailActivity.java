@@ -1,10 +1,9 @@
-package com.zhengxunw.colorfuldays;
+package com.zhengxunw.colorfuldays.stats_module;
 
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -12,15 +11,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
+import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+import com.zhengxunw.colorfuldays.database.TaskItem;
 
-import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_COLOR_KEY;
-import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_HOUR_KEY;
-import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_NAME_KEY;
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
 
 public class TaskDetailActivity extends AppCompatActivity {
 
@@ -28,9 +26,7 @@ public class TaskDetailActivity extends AppCompatActivity {
     private EditText mEditTaskInitHour;
     private Button colorSettingBtn;
     private Button deleteTaskBtn;
-    private String taskName;
-    private float taskHour;
-    private int taskColor;
+    private TaskItem taskItem;
     private ColorPicker cp;
     private boolean isNewTask = false;
 
@@ -48,14 +44,12 @@ public class TaskDetailActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        taskHour = intent.getFloatExtra(INTENT_EXTRA_TASK_HOUR_KEY, 0);
-        taskName = intent.getStringExtra(INTENT_EXTRA_TASK_NAME_KEY);
-        taskColor = intent.getIntExtra(INTENT_EXTRA_TASK_COLOR_KEY, Color.WHITE);
-
-        if (taskName == null || taskName.trim().equals("")) {
+        taskItem = (TaskItem) intent.getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
+        if (taskItem == null) {
             isNewTask = true;
             deleteTaskBtn.setVisibility(View.INVISIBLE);
             deleteTaskBtn.setClickable(false);
+            taskItem = new TaskItem();
         }
 
         if (!isNewTask) {
@@ -66,15 +60,15 @@ public class TaskDetailActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
-                    DatabaseHelper.getInstance(getApplicationContext()).removeTaskByName(taskName);
-                    DatabaseHelper.getInstance(getApplicationContext()).removeTransactionsByName(taskName);
+                    DatabaseHelper.getInstance(getApplicationContext()).removeTask(taskItem.getId());
+                    DatabaseHelper.getInstance(getApplicationContext()).removeTaskTransactions(taskItem.getId());
                     onBackPressed();
                 }
             });
         }
-        mEditTaskName.setText(taskName);
-        mEditTaskInitHour.setText(String.valueOf(taskHour));
-        colorSettingBtn.setBackgroundColor(taskColor);
+        mEditTaskName.setText(isNewTask ? "" : taskItem.getTaskName());
+        mEditTaskInitHour.setText(String.valueOf(isNewTask ? 0f : taskItem.getTaskHour()));
+        colorSettingBtn.setBackgroundColor(isNewTask ? Color.WHITE : taskItem.getColor());
 
         colorSettingBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,7 +76,7 @@ public class TaskDetailActivity extends AppCompatActivity {
                 cp.setCallback(new ColorPickerCallback() {
                     @Override
                     public void onColorChosen(int color) {
-                        taskColor = color;
+                        taskItem.setColor(color);
                         colorSettingBtn.setBackgroundColor(color);
                         cp.dismiss();
                     }
@@ -123,22 +117,31 @@ public class TaskDetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_task_action:
+                Context context = getApplicationContext();
                 DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
                 if (!isNewTask) {
-                    TaskItem existingTask = new TaskItem(taskName, taskHour, taskColor);
-                    db.updateData(existingTask);
+                    db.updateTask(taskItem);
                     break;
                 }
 
                 String newTaskName = mEditTaskName.getText().toString();
-                String newTaskHour = mEditTaskInitHour.getText().toString();
+                String newTaskHourText = mEditTaskInitHour.getText().toString();
+                float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
                 if (newTaskName.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Task name is required.", Toast.LENGTH_SHORT).show();
                     return false;
                 }
+                if (newTaskHour < 0) {
+                    Toast.makeText(getApplicationContext(), "Task initial time should be positive.", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
 
-                TaskItem newTask = new TaskItem(newTaskName, newTaskHour.isEmpty() ? 0 : Float.parseFloat(newTaskHour), taskColor);
-                db.insertData(newTask);
+                TaskItem newTask = new TaskItem(taskItem.getId(), newTaskName, newTaskHour, taskItem.getColor(), TaskItem.IDLE);
+                if (db.addNewTask(newTask)) {
+                    Toast.makeText(context, R.string.add_task_success, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, R.string.add_task_failure, Toast.LENGTH_SHORT).show();
+                }
         }
         onBackPressed();
         return true;

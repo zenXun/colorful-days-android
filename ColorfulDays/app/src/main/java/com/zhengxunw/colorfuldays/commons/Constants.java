@@ -11,8 +11,6 @@ public class Constants {
     public static final String LOCAL_STORAGE_TASK_TO_STARTTIME_KEY = "startTime";
     public static final String LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR = "_";
 
-    public static final String INTENT_EXTRA_TASK_NAME_KEY = "taskName";
-    public static final String INTENT_EXTRA_TASK_HOUR_KEY = "taskHour";
-    public static final String INTENT_EXTRA_TASK_COLOR_KEY = "taskColor";
+    public static final String INTENT_EXTRA_TASK_ITEM = "task item";
 
 }

@@ -1,7 +1,6 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -12,11 +11,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.zhengxunw.colorfuldays.commons.TimeUtils;
+import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
+import com.zhengxunw.colorfuldays.stats_module.TaskDetailActivity;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
-
-import java.util.Calendar;
+import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
+import com.zhengxunw.colorfuldays.today_module.HomeFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,16 +29,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // clear DB
-//        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
+        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
 
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
-//        db.insertData(new TaskItem("Reading", 23, Color.parseColor("#005DFF")));
-//        db.insertData(new TaskItem("Workout", 30, Color.parseColor("#F78800")));
-//        db.insertData(new TaskItem("Android", 22, Color.parseColor("#FF2C00")));
-//        db.insertData(new TaskItem("Guitar", 5.2f, Color.parseColor("#5A6754")));
-//        db.insertData(new TaskItem("Finance", 20, Color.parseColor("#C6005D")));
-//        db.insertData(new TaskItem("Blockchain", 4.1f, Color.parseColor("#E69FC4")));
-//        db.insertData(new TaskItem("Data Engineer", 28, Color.parseColor("#00E5CF")));
+//        db.addNewTask(new TaskItem("Reading", 23, Color.parseColor("#005DFF")));
+//        db.addNewTask(new TaskItem("Workout", 30, Color.parseColor("#F78800")));
+//        db.addNewTask(new TaskItem("Android", 22, Color.parseColor("#FF2C00")));
+//        db.addNewTask(new TaskItem("Guitar", 5.2f, Color.parseColor("#5A6754")));
+//        db.addNewTask(new TaskItem("Finance", 20, Color.parseColor("#C6005D")));
+//        db.addNewTask(new TaskItem("Blockchain", 4.1f, Color.parseColor("#E69FC4")));
+//        db.addNewTask(new TaskItem("Data Engineer", 28, Color.parseColor("#00E5CF")));
 //
 //
 //        Calendar c = TimeUtils.getCurrentCalendar();

@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 
-import com.zhengxunw.colorfuldays.TaskItem;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
@@ -25,15 +24,20 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_C
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_IS_IDLE;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_HOUR;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_ID;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_DATE;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getCalendarTableCreationSQL;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOnTaskNameSQL;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfDate;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfTaskIdSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getDropTableSQL;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getLastCalendarEntrySQL;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskByIdSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskTableCreationSQL;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTasksQueryByStateSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTransactionTableCreationSQL;
 
 /**
@@ -58,6 +62,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return mInstance;
     }
 
+    public static TaskItem getTaskItemInTaskTable(Cursor cursor) {
+        cursor.moveToFirst();
+        return new TaskItem(getIdFromTaskTable(cursor),
+                getNameInTaskTable(cursor),
+                getHourInTaskColor(cursor),
+                getColorInTaskTable(cursor),
+                getStateFromTaskTable(cursor));
+    }
+
+    public static int getStateFromTaskTable(Cursor cursor) {
+        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_IS_IDLE));
+    }
+
+    public static int getIdFromTaskTable(Cursor cursor) {
+        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_TASK_ID));
+    }
+
     public static String getNameInTaskTable(Cursor cursor) {
         return cursor.getString(cursor.getColumnIndex(TASK_TABLE_TASK_NAME));
     }
@@ -70,12 +91,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
     }
 
-    public static String getNameInTransTable(Cursor cursor) {
-        return cursor.getString(cursor.getColumnIndex(TRANSACTION_TABLE_TASK_NAME));
+    public static int getTaskIdFromTransTable(Cursor cursor) {
+        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_TASK_ID));
     }
 
     public static float getHourInTransTable(Cursor cursor) {
-        return cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
+        return cursor.getFloat(cursor.getColumnIndex(TRANSACTION_TABLE_TASK_HOUR));
     }
 
     public static int getColorInColorTable(Cursor cursor) {
@@ -100,8 +121,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * task table
      */
 
-    public Integer getTaskColor(String taskName) {
-        Cursor taskCursor = db.rawQuery(getColorOnTaskNameSQL(taskName), null);
+    public Integer getTaskColor(int taskId) {
+        Cursor taskCursor = db.rawQuery(getColorOfTaskIdSQL(taskId), null);
         taskCursor.moveToFirst();
         if (taskCursor.getCount() > 0) {
             return getColorInTaskTable(taskCursor);
@@ -110,41 +131,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
-    public boolean insertData(TaskItem taskItem) {
-        return db.insert(TASK_TABLE_NAME, null, taskItem.toContentValues()) != -1;
+    public boolean addNewTask(TaskItem task) {
+        return db.insert(TASK_TABLE_NAME, null, task.toContentValues()) != -1;
     }
 
-    public boolean updateData(TaskItem taskItem) {
-        String where = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskItem.getTaskName());
-        return db.update(TASK_TABLE_NAME, taskItem.toContentValues(), where, null) != -1;
+    public boolean updateTask(TaskItem task) {
+        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, task.getId());
+        return db.update(TASK_TABLE_NAME, task.toContentValues(), where, null) != -1;
     }
 
-    public boolean deleteTask(String taskName) {
-        String whereInTask = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
-        String whereInTrans = String.format("%s='%s'", TRANSACTION_TABLE_TASK_NAME, taskName);
+    public boolean deleteTask(TaskItem task) {
+        String whereInTask = String.format("%s='%s'", TASK_TABLE_TASK_ID, task.getId());
+        String whereInTrans = String.format("%s='%s'", TASK_TABLE_TASK_ID, task.getId());
         return (db.delete(TASK_TABLE_NAME, whereInTask, null) != -1) &&
                 (db.delete(TRANSACTION_TABLE_NAME, whereInTrans, null) != -1);
     }
 
-    public boolean removeTaskByName(String taskName) {
-        String where = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
-        return db.delete(TASK_TABLE_NAME, where, null) > 0;
+    public boolean removeTask(int taskId) {
+        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
+        return db.delete(TASK_TABLE_NAME, where, null) != -1;
     }
 
-    public boolean removeTransactionsByName(String taskName) {
-        String where = String.format("%s='%s'", TRANSACTION_TABLE_TASK_NAME, taskName);
-        return db.delete(TRANSACTION_TABLE_NAME, where, null) > 0;
+    public boolean removeTaskTransactions(int taskId) {
+        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
+        return db.delete(TRANSACTION_TABLE_NAME, where, null) != -1;
     }
 
-    public void addTimeByName(String taskName, float timeAdded) {
+    public boolean addTaskTime(int taskId, float timeAdded) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(TASK_TABLE_TASK_HOUR, getTime(taskName) + timeAdded);
-        String where = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
-        db.update(TASK_TABLE_NAME, contentValues, where, null);
+        contentValues.put(TASK_TABLE_TASK_HOUR, getTime(taskId) + timeAdded);
+        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
+        return db.update(TASK_TABLE_NAME, contentValues, where, null) != -1;
     }
 
-    public float getTime(String taskName) {
-        String queryTime = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TASK_TABLE_NAME, TASK_TABLE_TASK_NAME, taskName);
+    public float getTime(int taskId) {
+        String queryTime = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TASK_TABLE_NAME, TASK_TABLE_TASK_ID, taskId);
         Cursor cursor = db.rawQuery(queryTime, null);
         cursor.moveToFirst();
         float time = cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
@@ -152,51 +173,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return time;
     }
 
-    private boolean updateByName(String taskName, String columnName, int newVal) {
+    private boolean updateTaskAttribute(int taskId, String columnName, int newVal) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(columnName, newVal);
-        String where = String.format("%s='%s'", TASK_TABLE_TASK_NAME, taskName);
+        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
         return db.update(TASK_TABLE_NAME, contentValues, where, null) != -1;
     }
 
-    public boolean updateState(String taskName, int isIdle) {
-        return updateByName(taskName, TASK_TABLE_IS_IDLE, isIdle);
+    public boolean updateTaskState(int taskId, int isIdle) {
+        return updateTaskAttribute(taskId, TASK_TABLE_IS_IDLE, isIdle);
     }
 
-    public Cursor getTaskContentsByState(int taskType) {
-        String sql;
-        if (taskType == TaskItem.ALL) {
-            sql = "SELECT rowid _id, * FROM " + TASK_TABLE_NAME;
-        } else {
-            sql = String.format("SELECT rowid _id, * FROM %s WHERE %s=%s", TASK_TABLE_NAME, TASK_TABLE_IS_IDLE, taskType);
-        }
-        return db.rawQuery(sql, null);
+    public Cursor getTaskByState(int taskType) {
+        return db.rawQuery(getTasksQueryByStateSQL(taskType), null);
+    }
+
+    public Cursor getTaskById(int taskId) {
+        return db.rawQuery(getTaskByIdSQL(taskId), null);
     }
 
     /**
      * transaction table
      * */
-    public boolean appendTransaction(String date, String name, float hours) {
+    public boolean appendTransaction(String date, int taskId, float hours) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(TRANSACTION_TABLE_DATE, date);
-        contentValues.put(TRANSACTION_TABLE_TASK_NAME, name);
+        contentValues.put(TASK_TABLE_TASK_ID, taskId);
         contentValues.put(TRANSACTION_TABLE_TASK_HOUR, hours);
         return db.insert(TRANSACTION_TABLE_NAME, null, contentValues) != -1;
     }
 
     public Cursor queryTransactionByDate(String date) {
-        String sql = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date);
-        return db.rawQuery(sql, null);
+        return db.rawQuery(DatabaseConstants.getTransactionByDateSQL(date), null);
     }
 
     private Cursor getLastTransactionEntry() {
-        String sql = String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE);
-        return db.rawQuery(sql, null);
+        return db.rawQuery(DatabaseConstants.getLastTransactionSQL(), null);
     }
 
     private Cursor getFirstTransactionEntry() {
-        String sql = String.format("SELECT rowid _id, * FROM %s ORDER BY %s ASC LIMIT 1;", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE);
-        return db.rawQuery(sql, null);
+        return db.rawQuery(DatabaseConstants.getFirstTransactionSQL(), null);
     }
 
     /**
@@ -210,8 +226,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public int getDayColor(String date) {
-        String sql = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE, date);
-        Cursor cursor = db.rawQuery(sql, null);
+        Cursor cursor = db.rawQuery(getColorOfDate(date), null);
         cursor.moveToFirst();
         if (cursor.getCount() > 0) {
             return getColorInColorTable(cursor);
@@ -220,8 +235,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private Cursor getLastCalendarEntry() {
-        String sql = String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE);
-        return db.rawQuery(sql, null);
+        return db.rawQuery(getLastCalendarEntrySQL(), null);
     }
 
     /**
@@ -286,9 +300,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 return Color.WHITE;
             }
             do {
-                String taskName = getNameInTransTable(dateCursor);
+                int taskId = getTaskIdFromTransTable(dateCursor);
                 float hour = getHourInTransTable(dateCursor);
-                Integer curColor = getTaskColor(taskName);
+                Integer curColor = getTaskColor(taskId);
                 if (curColor != null && hour > 0) {
                     float passHour = colorToHour.getOrDefault(curColor, 0f);
                     colorToHour.put(curColor, passHour + hour);
