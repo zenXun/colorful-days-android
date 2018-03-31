@@ -29,7 +29,6 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_T
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_DATE;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getCalendarTableCreationSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfDate;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfTaskIdSQL;
@@ -63,10 +62,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static TaskItem getTaskItemInTaskTable(Cursor cursor) {
-        cursor.moveToFirst();
         return new TaskItem(getIdFromTaskTable(cursor),
                 getNameInTaskTable(cursor),
                 getHourInTaskColor(cursor),
+                getColorInTaskTable(cursor),
+                getStateFromTaskTable(cursor));
+    }
+
+    public static TaskItem getTaskItemFromTransJoinTaskTable(Cursor cursor) {
+        return new TaskItem(getTaskIdFromTransTable(cursor),
+                getNameInTaskTable(cursor),
+                getHourInTransTable(cursor),
                 getColorInTaskTable(cursor),
                 getStateFromTaskTable(cursor));
     }
@@ -201,6 +207,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(TASK_TABLE_TASK_ID, taskId);
         contentValues.put(TRANSACTION_TABLE_TASK_HOUR, hours);
         return db.insert(TRANSACTION_TABLE_NAME, null, contentValues) != -1;
+    }
+
+    public Cursor queryTransactionGroupByTaskByDate(String date) {
+        return db.rawQuery(DatabaseConstants.getTransactionsGroupByTaskOnDateSQL(date), null);
     }
 
     public Cursor queryTransactionByDate(String date) {

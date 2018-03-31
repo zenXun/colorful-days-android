@@ -40,19 +40,14 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         ListView todayTasks = (ListView) findViewById(R.id.today_tasks);
         String dateKey = getIntent().getStringExtra("date");
 
-        Set<Integer> taskIds = new HashSet<>();
-        Cursor cursor = DatabaseHelper.getInstance(getApplicationContext()).queryTransactionByDate(dateKey);
-        cursor.moveToFirst();
-        do {
-            if (cursor.getCount() > 0) {
-                int taskId = DatabaseHelper.getTaskIdFromTransTable(cursor);
-                taskIds.add(taskId);
-            }
-        } while (cursor.moveToNext());
         ArrayList<TaskItem> tasks = new ArrayList<>();
-        for (int id : taskIds) {
-            tasks.add(DatabaseHelper.getTaskItemInTaskTable(DatabaseHelper.getInstance(getApplicationContext()).getTaskById(id)));
-        }
+        Cursor transCursor = DatabaseHelper.getInstance(getApplicationContext()).queryTransactionGroupByTaskByDate(dateKey);
+        transCursor.moveToFirst();
+        do {
+            if (transCursor.getCount() > 0) {
+                tasks.add(DatabaseHelper.getTaskItemFromTransJoinTaskTable(transCursor));
+            }
+        } while (transCursor.moveToNext());
         todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
 
     }

@@ -3,13 +3,11 @@ package com.zhengxunw.colorfuldays.today_module;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -21,28 +19,20 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.database.TaskItem;
-import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.Constants;
+import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 public class HomeFragment extends Fragment {
 
     private TextView mTextDate;
     private IdleTaskCursorAdapter idleListAdapter;
     private WorkingTaskCursorAdapter workingListAdapter;
-
-    private Handler handler = new Handler();
-    private Map<Integer, Long> taskToTime = new HashMap<>();
-    private Map<Integer, TextView> taskToView = new HashMap<>();
-    private Map<Integer, Runnable> taskToRunnable = new HashMap<>();
+    private HomeFragmentContext homeContext;
 
     private View.OnDragListener idleTaskDragListener = new View.OnDragListener() {
         @Override
@@ -99,6 +89,7 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        homeContext = new HomeFragmentContext(getActivity(), getContext());
         ListView idleTaskList = view.findViewById(R.id.idle_task_list);
         ListView workingTaskList = view.findViewById(R.id.working_task_list);
         mTextDate = view.findViewById(R.id.today_date);
@@ -121,7 +112,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        loadTaskStartTime();
+        homeContext.loadTaskStartTime();
         notifyAdapters();
         displayCurrentDate();
     }
@@ -129,7 +120,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        serializeTaskStartTime();
+        homeContext.serializeTaskStartTime();
     }
 
     private void notifyAdapters() {
@@ -142,35 +133,6 @@ public class HomeFragment extends Fragment {
     private void displayCurrentDate() {
         Date currentTime = TimeUtils.getTodayDate();
         mTextDate.setText(TimeUtils.DATE_FORMAT_HOME.format(currentTime));
-    }
-
-    private void serializeTaskStartTime() {
-        Set<String> ret = new HashSet<>();
-        for (Map.Entry<Integer, Long> entry : taskToTime.entrySet()) {
-            ret.add(entry.getKey() +
-                    Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR +
-                    String.valueOf(entry.getValue()));
-        }
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_KEY, ret);
-        editor.apply();
-    }
-
-    private void loadTaskStartTime() {
-        Set<String> serializedTaskTime = getActivity().getPreferences(Context.MODE_PRIVATE)
-                .getStringSet(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_KEY, null);
-        if (serializedTaskTime != null) {
-            for (String elem : serializedTaskTime) {
-                String[] parts = elem.split(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR);
-                String taskId = parts[0];
-                String startTime = parts[1];
-                taskToTime.put(Integer.valueOf(taskId), Long.valueOf(startTime));
-            }
-        }
-        getContext()
-                .getSharedPreferences(Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_KEY, 0)
-                .edit().clear().apply();
     }
 
     public class IdleTaskCursorAdapter extends android.widget.CursorAdapter {
@@ -228,12 +190,12 @@ public class HomeFragment extends Fragment {
                     .inflate(android.R.layout.simple_list_item_2, viewGroup, false);
             TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
             int taskId = taskItem.getId();
-            taskToView.put(taskId, (TextView) view.findViewById(android.R.id.text2));
-            if (!taskToRunnable.containsKey(taskId)) {
+            homeContext.putTaskTextView(taskId, (TextView) view.findViewById(android.R.id.text2));
+            if (!homeContext.isTaskRunning(taskId)) {
                 Runnable runnable = new displayTimerOnView(taskId);
-                taskToRunnable.put(taskId, runnable);
-                if (!taskToTime.containsKey(taskId)) {
-                    taskToTime.put(taskId, System.currentTimeMillis());
+                homeContext.putRunningTask(taskId, runnable);
+                if (!homeContext.didTaskStart(taskId)) {
+                    homeContext.putTaskStartTime(taskId, System.currentTimeMillis());
                 }
             }
             view.setOnClickListener(new workingTaskOnClickListener(taskItem));
@@ -253,14 +215,8 @@ public class HomeFragment extends Fragment {
                 taskView.setTextColor(Color.WHITE);
                 timeView.setTextColor(Color.WHITE);
             }
-            handler.post(taskToRunnable.get(taskItem.getId()));
+            homeContext.startRunningTask(homeContext.getRunningTask(taskItem.getId()));
         }
-    }
-
-    private void clearTaskResource(int taskId) {
-        taskToView.remove(taskId);
-        taskToRunnable.remove(taskId);
-        taskToTime.remove(taskId);
     }
 
     public class DragContext {
@@ -294,8 +250,8 @@ public class HomeFragment extends Fragment {
 
     private void switchTaskStateToIdle(int taskId) {
         DatabaseHelper.getInstance(getContext()).updateTaskState(taskId, TaskItem.IDLE);
-        handler.removeCallbacks(taskToRunnable.get(taskId));
-        clearTaskResource(taskId);
+        homeContext.stopRunningTask(taskId);
+        homeContext.clearTaskResource(taskId);
         notifyAdapters();
     }
 
@@ -357,7 +313,7 @@ public class HomeFragment extends Fragment {
         }
         @Override
         public void onClick(View view) {
-            float timeAdded = TimeUtils.millisToHour(System.currentTimeMillis() - taskToTime.get(taskItem.getId()));
+            float timeAdded = TimeUtils.millisToHour(System.currentTimeMillis() - homeContext.getTaskStartTime(taskItem.getId()));
             TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
                     android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
                     new taskOnTimeSetListener(taskItem), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
@@ -379,9 +335,9 @@ public class HomeFragment extends Fragment {
             this.taskId = taskId;
         }
         public void run() {
-            long millis = System.currentTimeMillis() - taskToTime.get(taskId);
-            taskToView.get(taskId).setText(TimeUtils.getCountingTime(millis));
-            handler.post(this);
+            long millis = System.currentTimeMillis() - homeContext.getTaskStartTime(taskId);
+            homeContext.getTaskTextView(taskId).setText(TimeUtils.getCountingTime(millis));
+            homeContext.startRunningTask(this);
         }
     }
 

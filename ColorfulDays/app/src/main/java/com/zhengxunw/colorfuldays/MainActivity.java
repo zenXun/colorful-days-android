@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -12,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
+import com.zhengxunw.colorfuldays.database.TaskItem;
 import com.zhengxunw.colorfuldays.stats_module.TaskDetailActivity;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
@@ -29,16 +31,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // clear DB
-        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
+//        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
 
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
-//        db.addNewTask(new TaskItem("Reading", 23, Color.parseColor("#005DFF")));
-//        db.addNewTask(new TaskItem("Workout", 30, Color.parseColor("#F78800")));
-//        db.addNewTask(new TaskItem("Android", 22, Color.parseColor("#FF2C00")));
-//        db.addNewTask(new TaskItem("Guitar", 5.2f, Color.parseColor("#5A6754")));
-//        db.addNewTask(new TaskItem("Finance", 20, Color.parseColor("#C6005D")));
-//        db.addNewTask(new TaskItem("Blockchain", 4.1f, Color.parseColor("#E69FC4")));
-//        db.addNewTask(new TaskItem("Data Engineer", 28, Color.parseColor("#00E5CF")));
+//        db.addNewTask(new TaskItem(1, "Reading", 24.03f, Color.parseColor("#005DFF"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(2, "Workout", 30, Color.parseColor("#F78800"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(3, "Android", 26.08f, Color.parseColor("#FF2C00"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(4, "Guitar", 5.2f, Color.parseColor("#5A6754"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(5, "Finance", 20.92f, Color.parseColor("#C6005D"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(6, "Blockchain", 4.1f, Color.parseColor("#E69FC4"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(7, "Data Engineer", 28.47f, Color.parseColor("#00E5CF"), TaskItem.IDLE));
 //
 //
 //        Calendar c = TimeUtils.getCurrentCalendar();
