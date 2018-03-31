@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/add_task"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_add_black_24dp"
         android:title="@string/title_add_task"
         app:showAsAction="always"
         android:orderInCategory="0"/>

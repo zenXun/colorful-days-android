@@ -15,7 +15,7 @@
     <com.zhengxunw.colorfuldays.calendar_module.CustomizedCalendarView
         android:id="@+id/calendar_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         calendarNS:dateFormat="MMMM yyyy">
 
     </com.zhengxunw.colorfuldays.calendar_module.CustomizedCalendarView>

@@ -34,13 +34,13 @@ public class MainActivity extends AppCompatActivity {
 //        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
 
         DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
-//        db.addNewTask(new TaskItem(1, "Reading", 24.03f, Color.parseColor("#005DFF"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(1, "Reading", 25.36f, Color.parseColor("#005DFF"), TaskItem.IDLE));
 //        db.addNewTask(new TaskItem(2, "Workout", 30, Color.parseColor("#F78800"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(3, "Android", 26.08f, Color.parseColor("#FF2C00"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(3, "Android", 28.08f, Color.parseColor("#FF2C00"), TaskItem.IDLE));
 //        db.addNewTask(new TaskItem(4, "Guitar", 5.2f, Color.parseColor("#5A6754"), TaskItem.IDLE));
 //        db.addNewTask(new TaskItem(5, "Finance", 20.92f, Color.parseColor("#C6005D"), TaskItem.IDLE));
 //        db.addNewTask(new TaskItem(6, "Blockchain", 4.1f, Color.parseColor("#E69FC4"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(7, "Data Engineer", 28.47f, Color.parseColor("#00E5CF"), TaskItem.IDLE));
+//        db.addNewTask(new TaskItem(7, "Data Engineer", 29.47f, Color.parseColor("#00E5CF"), TaskItem.IDLE));
 //
 //
 //        Calendar c = TimeUtils.getCurrentCalendar();

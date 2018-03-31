@@ -8,12 +8,12 @@
 
     <item
         android:id="@+id/navigation_single_stats"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_equalizer_black_24dp"
         android:title="@string/title_stats"/>
 
     <item
         android:id="@+id/navigation_total_stats"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_palette_black_24dp"
         android:title="@string/title_colors"/>
 
 </menu>
