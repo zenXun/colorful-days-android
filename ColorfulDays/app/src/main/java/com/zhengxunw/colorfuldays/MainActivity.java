@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private PagerAdapter mPagerAdapter;
 
     private FragmentManager fragmentManager;
+    private Fragment homeFrag, statsFrag, calendarFrag;
     private BottomNavigationView bottomNavigationView;
 
     @Override
@@ -55,11 +56,12 @@ public class MainActivity extends AppCompatActivity {
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = findViewById(R.id.content);
         fragmentManager = getSupportFragmentManager();
+        homeFrag = HomeFragment.newInstance();
+        statsFrag = StatsFragment.newInstance();
+        calendarFrag = CalendarFragment.newInstance();
 
         // clear DB
 //        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
-
-        DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
 //        db.addNewTask(new TaskItem(1, "Reading", 25.36f, Color.parseColor("#005DFF"), TaskItem.IDLE));
 //        db.addNewTask(new TaskItem(2, "Workout", 30, Color.parseColor("#F78800"), TaskItem.IDLE));
 //        db.addNewTask(new TaskItem(3, "Android", 28.08f, Color.parseColor("#FF2C00"), TaskItem.IDLE));
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
+                mPager.getAdapter().notifyDataSetChanged();
                 switch (position) {
                     case 0:
                         bottomNavigationView.getMenu().getItem(0).setChecked(true);
@@ -184,23 +187,28 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return HomeFragment.newInstance();
+                    return homeFrag;
                 case 1:
-                    return StatsFragment.newInstance();
+                    return statsFrag;
                 case 2:
-                    return CalendarFragment.newInstance();
+                    return calendarFrag;
             }
-            return HomeFragment.newInstance();
+            return homeFrag;
         }
 
         @Override
         public int getCount() {
             return NUM_PAGES;
         }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return POSITION_NONE;
+        }
     }
 
     private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
-        private static final float MIN_SCALE = 0.85f;
+        private static final float MIN_SCALE = 0.9f;
         private static final float MIN_ALPHA = 0.5f;
 
         public void transformPage(View view, float position) {

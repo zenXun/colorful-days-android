@@ -61,10 +61,9 @@ public class StatsFragment extends Fragment {
         //super.onSaveInstanceState(outState);
     }
 
-
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         allTaskListAdapter.changeCursor(db.getTaskByState(TaskItem.ALL));
         allTaskListAdapter.notifyDataSetChanged();
     }
