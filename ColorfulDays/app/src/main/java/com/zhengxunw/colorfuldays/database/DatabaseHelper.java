@@ -182,7 +182,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private boolean updateTaskAttribute(int taskId, String columnName, int newVal) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(columnName, newVal);
-        String where = String.format("%s=%s", TASK_TABLE_TASK_ID, taskId);
+        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
         return db.update(TASK_TABLE_NAME, contentValues, where, null) != -1;
     }
 

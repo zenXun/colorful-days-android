@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
@@ -35,16 +36,15 @@ public class TaskDetailActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         cp = new ColorPicker(TaskDetailActivity.this);
-        mEditTaskName = (EditText) findViewById(R.id.edit_task_name);
-        mEditTaskInitHour = (EditText) findViewById(R.id.edit_task_init_hour);
-        colorSettingBtn = (Button) findViewById(R.id.color_setting);
-        deleteTaskBtn = (Button) findViewById(R.id.delete_task);
+        mEditTaskName = findViewById(R.id.edit_task_name);
+        mEditTaskInitHour = findViewById(R.id.edit_task_init_hour);
+        colorSettingBtn = findViewById(R.id.color_setting);
+        deleteTaskBtn = findViewById(R.id.delete_task);
 
-        Intent intent = getIntent();
-
-        taskItem = (TaskItem) intent.getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
+        taskItem = getIntent().getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
+        
         if (taskItem == null) {
             isNewTask = true;
             deleteTaskBtn.setVisibility(View.INVISIBLE);
@@ -53,19 +53,9 @@ public class TaskDetailActivity extends AppCompatActivity {
         }
 
         if (!isNewTask) {
-            mEditTaskInitHour.setInputType(0);
-            mEditTaskName.setInputType(0);
-
-            deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
-                    DatabaseHelper.getInstance(getApplicationContext()).removeTask(taskItem.getId());
-                    DatabaseHelper.getInstance(getApplicationContext()).removeTaskTransactions(taskItem.getId());
-                    onBackPressed();
-                }
-            });
+            existingTaskSetup();
         }
+
         mEditTaskName.setText(isNewTask ? "" : taskItem.getTaskName());
         mEditTaskInitHour.setText(String.valueOf(isNewTask ? 0f : taskItem.getTaskHour()));
         colorSettingBtn.setBackgroundColor(isNewTask ? Color.WHITE : taskItem.getColor());
@@ -87,6 +77,23 @@ public class TaskDetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+    }
+
+    private void existingTaskSetup() {
+        mEditTaskInitHour.setInputType(0);
+        mEditTaskName.setInputType(0);
+        TextView hourTV = findViewById(R.id.task_hour_tv);
+        hourTV.setText(R.string.existing_task_hour_tv_hint);
+
+        deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
+                DatabaseHelper.getInstance(getApplicationContext()).removeTask(taskItem.getId());
+                DatabaseHelper.getInstance(getApplicationContext()).removeTaskTransactions(taskItem.getId());
+                onBackPressed();
+            }
+        });
     }
 
     @Override

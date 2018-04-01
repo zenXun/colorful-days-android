@@ -6,6 +6,11 @@
     <string name="title_add_task">Add Task</string>
     <string name="add_task_success">New task was added successfully.</string>
     <string name="add_task_failure">New task failed to be added.</string>
+    <string name="task_name_tv_hint">Task Name:</string>
+    <string name="task_name_tv_eg">Eg: Workout</string>
+    <string name="task_hour_tv_hint">Initial Time:</string>
+    <string name="existing_task_hour_tv_hint">Hours Spent</string>
+    <string name="task_hour_tv_eg">Eg: 10</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
