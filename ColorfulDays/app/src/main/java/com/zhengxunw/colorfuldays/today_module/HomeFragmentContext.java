@@ -68,7 +68,11 @@ class HomeFragmentContext {
     }
 
     void stopRunningTask(int taskId) {
-        handler.removeCallbacks(taskToRunnable.get(taskId));
+        Runnable runnable = taskToRunnable.get(taskId);
+        if (runnable == null) {
+            return;
+        }
+        handler.removeCallbacks(runnable);
     }
 
     void startRunningTask(Runnable task) {

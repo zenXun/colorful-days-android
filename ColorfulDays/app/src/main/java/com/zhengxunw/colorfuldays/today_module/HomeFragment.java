@@ -222,8 +222,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
-                    android.R.style.Theme_Holo_Light_Dialog,
+            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
                     new taskOnTimeSetListener(taskItem), 0, 0, true);
             timePickerDialog.setTitle(taskItem.getTaskName());
             timePickerDialog.show();
@@ -251,10 +250,12 @@ public class HomeFragment extends Fragment {
             float timeAdded = hourOfDay + (float)minute / 60;
             int id = taskItem.getId();
             String name = taskItem.getTaskName();
-            DatabaseHelper.getInstance(getContext()).addTaskTime(id, timeAdded);
-            DatabaseHelper.getInstance(getContext()).appendTransaction(TimeUtils.getCurrentDateKey(), id, timeAdded);
             if (!taskItem.isIdle()) {
                 switchTaskStateToIdle(id);
+            }
+            if (timeAdded > 0) {
+                DatabaseHelper.getInstance(getContext()).addTaskTime(id, timeAdded);
+                DatabaseHelper.getInstance(getContext()).appendTransaction(TimeUtils.getCurrentDateKey(), id, timeAdded);
             }
             Toast.makeText(getContext(), name + " " + timeAdded, Toast.LENGTH_SHORT).show();
         }
@@ -295,8 +296,7 @@ public class HomeFragment extends Fragment {
         @Override
         public void onClick(View view) {
             float timeAdded = TimeUtils.millisToHour(System.currentTimeMillis() - homeContext.getTaskStartTime(taskItem.getId()));
-            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
-                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
                     new taskOnTimeSetListener(taskItem), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
             timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override

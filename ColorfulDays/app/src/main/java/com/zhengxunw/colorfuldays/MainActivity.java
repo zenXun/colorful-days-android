@@ -77,13 +77,21 @@ public class MainActivity extends AppCompatActivity {
 //        c.set(2018, 2, 11, 0, 0);
 //        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, 1);
 //        c.set(2018, 2, 12, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 2, 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 2, 2);
 //        c.set(2018, 2, 13, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 3);
 //        c.set(2018, 2, 14, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, 4);
 //        c.set(2018, 2, 15, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, 5);
+//        c.set(2018, 2, 16, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, 6);
+//        c.set(2018, 2, 21, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, 0.5f);
+//        c.set(2018, 2, 21, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, 1);
+//        c.set(2018, 2, 21, 0, 0);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 2);
 
         mPagerAdapter = new ScreenSlidePagerAdapter(fragmentManager);
         mPager.setAdapter(mPagerAdapter);
