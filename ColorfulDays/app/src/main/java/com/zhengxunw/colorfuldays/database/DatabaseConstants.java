@@ -51,8 +51,8 @@ public class DatabaseConstants {
         return String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE);
     }
 
-    static String getFirstTransactionSQL() {
-        return String.format("SELECT rowid _id, * FROM %s ORDER BY %s ASC LIMIT 1;", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE);
+    static String getFirstTransactionSQL(int taskID) {
+        return String.format("SELECT * FROM %s WHERE %s='%s' ORDER BY %s ASC LIMIT 1;", TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskID, TRANSACTION_TABLE_DATE);
     }
 
     static String getLastTransactionSQL() {
@@ -89,4 +89,9 @@ public class DatabaseConstants {
     static String getTransactionByDateSQL(String date) {
         return String.format("SELECT * FROM %s WHERE %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date);
     }
+
+    static String getTransactionsByDateAndTaskSQL(String date, int taskId) {
+        return String.format("SELECT * FROM %s WHERE %s='%s' AND %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId);
+    }
+
 }

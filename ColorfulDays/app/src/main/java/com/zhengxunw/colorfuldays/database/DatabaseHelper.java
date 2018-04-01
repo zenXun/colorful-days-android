@@ -194,6 +194,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(getTasksQueryByStateSQL(taskType), null);
     }
 
+    public String getFirstTransactionDate(int taskId) {
+        Cursor cursor = db.rawQuery(DatabaseConstants.getFirstTransactionSQL(taskId), null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(DatabaseConstants.TRANSACTION_TABLE_DATE);
+        if (cursor.getCount() == 0 || idx < 0) {
+            return null;
+        }
+        String date = cursor.getString(idx);
+        cursor.close();
+        return date;
+    }
+
     public Cursor getTaskById(int taskId) {
         return db.rawQuery(getTaskByIdSQL(taskId), null);
     }
@@ -215,6 +227,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor queryTransactionByDate(String date) {
         return db.rawQuery(DatabaseConstants.getTransactionByDateSQL(date), null);
+    }
+
+    public Cursor queryTransactionByDateAndTask(String date, int id) {
+        return db.rawQuery(DatabaseConstants.getTransactionsByDateAndTaskSQL(date, id), null);
     }
 
     /**

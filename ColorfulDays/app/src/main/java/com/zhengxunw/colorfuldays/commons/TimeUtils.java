@@ -44,7 +44,7 @@ public class TimeUtils {
     }
 
     public static String getDisplayHour(float hour) {
-        return String.format(Locale.US, "%.02f", hour) + " hours";
+        return String.format(Locale.US, "%.02f", hour) + "\n hours";
     }
 
     public static float millisToHour(long duration) {

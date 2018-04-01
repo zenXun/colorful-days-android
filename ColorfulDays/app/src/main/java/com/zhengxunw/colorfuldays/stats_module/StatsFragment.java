@@ -81,19 +81,25 @@ public class StatsFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            TextView taskStripTV = view.findViewById(R.id.task_color_strip);
             TextView taskPartTV = view.findViewById(R.id.task_name_part);
             TextView hourPartTV = view.findViewById(R.id.task_hour_part);
 
             final TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
             int bgColor = taskItem.getColor();
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);
+            String firstDate = DatabaseHelper.getInstance(getContext()).getFirstTransactionDate(taskItem.getId());
             String hourPart = TimeUtils.getDisplayHour(taskItem.getTaskHour());
 
+            if (firstDate != null) {
+                TextView datePartTV = view.findViewById(R.id.task_start_date_tv);
+                datePartTV.setText("Start from: " + firstDate);
+            }
             taskPartTV.setText(taskItem.getTaskName());
             hourPartTV.setText(hourPart);
-            view.setBackgroundColor(bgColor);
-            taskPartTV.setTextColor(txtColor);
             hourPartTV.setTextColor(txtColor);
+            taskStripTV.setBackgroundColor(bgColor);
+            hourPartTV.setBackgroundColor(bgColor);
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override

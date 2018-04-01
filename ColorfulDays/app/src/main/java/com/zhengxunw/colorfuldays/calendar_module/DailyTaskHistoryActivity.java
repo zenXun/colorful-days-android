@@ -8,6 +8,7 @@ import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -33,18 +34,20 @@ import java.util.Set;
 
 public class DailyTaskHistoryActivity extends AppCompatActivity {
 
+    String date;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.daily_task_history);
         ListView todayTasks = findViewById(R.id.today_tasks);
-        String dateKey = getIntent().getStringExtra(CustomizedCalendarView.DAILY_TASK_INTENT_EXTRA_KEY);
+        date = getIntent().getStringExtra(CustomizedCalendarView.DAILY_TASK_INTENT_EXTRA_KEY);
         TextView dateTV = findViewById(R.id.date_tv);
-        dateTV.setText(dateKey);
+        dateTV.setText(date);
 
         ArrayList<TaskItem> tasks = new ArrayList<>();
-        Cursor transCursor = DatabaseHelper.getInstance(getApplicationContext()).queryTransactionGroupByTaskByDate(dateKey);
+        Cursor transCursor = DatabaseHelper.getInstance(getApplicationContext()).queryTransactionGroupByTaskByDate(date);
         transCursor.moveToFirst();
         do {
             if (transCursor.getCount() > 0) {
@@ -85,14 +88,25 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.stats_item, parent, false);
             }
             // Lookup view for data population
+            TextView taskTimesTV = convertView.findViewById(R.id.task_start_date_tv);
             TextView taskPartTV = (TextView) convertView.findViewById(R.id.task_name_part);
             TextView hourPartTV = (TextView) convertView.findViewById(R.id.task_hour_part);
+
+            taskTimesTV.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+
+            Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionByDateAndTask(date, task.getId());
+            cursor.moveToFirst();
+            int times = cursor.getCount();
+            cursor.close();
             // Populate the data into the template view using the data object
             taskPartTV.setText(task.getTaskName());
             hourPartTV.setText(TimeUtils.getDisplayHour(task.getTaskHour()));
+            taskTimesTV.setText("Did " + times + " times");
+
 
             int bgColor = task.getColor();
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);
+            taskTimesTV.setTextColor(txtColor);
             taskPartTV.setTextColor(txtColor);
             hourPartTV.setTextColor(txtColor);
             convertView.setBackgroundColor(bgColor);
