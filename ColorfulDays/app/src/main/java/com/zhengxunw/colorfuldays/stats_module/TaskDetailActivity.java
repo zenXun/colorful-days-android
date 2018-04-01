@@ -80,8 +80,6 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void existingTaskSetup() {
-        mEditTaskInitHour.setInputType(0);
-        mEditTaskName.setInputType(0);
         TextView hourTV = findViewById(R.id.task_hour_tv);
         hourTV.setText(R.string.existing_task_hour_tv_hint);
 
@@ -126,20 +124,19 @@ public class TaskDetailActivity extends AppCompatActivity {
             case R.id.add_task_action:
                 Context context = getApplicationContext();
                 DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
+                String newTaskName = mEditTaskName.getText().toString();
+                String newTaskHourText = mEditTaskInitHour.getText().toString();
+                float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
+
                 if (!isNewTask) {
+                    taskItem.setTaskName(newTaskName);
+                    taskItem.setTaskHour(newTaskHour);
                     db.updateTask(taskItem);
                     break;
                 }
 
-                String newTaskName = mEditTaskName.getText().toString();
-                String newTaskHourText = mEditTaskInitHour.getText().toString();
-                float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
                 if (newTaskName.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Task name is required.", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-                if (newTaskHour < 0) {
-                    Toast.makeText(getApplicationContext(), "Task initial time should be positive.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.empty_task_name_msg, Toast.LENGTH_SHORT).show();
                     return false;
                 }
 
