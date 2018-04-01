@@ -7,10 +7,14 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
 import com.zhengxunw.colorfuldays.database.TaskItem;
@@ -21,14 +25,33 @@ import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
 import com.zhengxunw.colorfuldays.today_module.HomeFragment;
 
 public class MainActivity extends AppCompatActivity {
+    /**
+     * The number of pages (wizard steps) to show in this demo.
+     */
+    private static final int NUM_PAGES = 3;
+
+    /**
+     * The pager widget, which handles animation and allows swiping horizontally to access previous
+     * and next wizard steps.
+     */
+    private ViewPager mPager;
+
+    /**
+     * The pager adapter, which provides the pages to the view pager widget.
+     */
+    private PagerAdapter mPagerAdapter;
 
     private FragmentManager fragmentManager;
-    private Fragment homeFragment, statsFragment, colorFragment;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Instantiate a ViewPager and a PagerAdapter.
+        mPager = findViewById(R.id.content);
+        fragmentManager = getSupportFragmentManager();
 
         // clear DB
 //        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
@@ -62,36 +85,69 @@ public class MainActivity extends AppCompatActivity {
 
         db.populateColorTable();
 
+        mPagerAdapter = new ScreenSlidePagerAdapter(fragmentManager);
+        mPager.setAdapter(mPagerAdapter);
+        mPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                switch (position) {
+                    case 0:
+                        bottomNavigationView.getMenu().getItem(0).setChecked(true);
+                        break;
+                    case 1:
+                        bottomNavigationView.getMenu().getItem(1).setChecked(true);
+                        break;
+                    case 2:
+                        bottomNavigationView.getMenu().getItem(2).setChecked(true);
+                        break;
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        bottomNavigationView = findViewById(R.id.navigation);
+        bottomNavigationView.setSelected(false);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
                 switch (item.getItemId()) {
                     case R.id.navigation_today:
-                        transaction.replace(R.id.content, homeFragment).commit();
+                        mPager.setCurrentItem(0);
                         return true;
                     case R.id.navigation_single_stats:
-                        transaction.replace(R.id.content, statsFragment).commit();
+                        mPager.setCurrentItem(1);
                         return true;
                     case R.id.navigation_total_stats:
-                        transaction.replace(R.id.content, colorFragment).commit();
+                        mPager.setCurrentItem(2);
                         return true;
                 }
                 return false;
             }
 
         });
+    }
 
-        fragmentManager = getSupportFragmentManager();
-        homeFragment = HomeFragment.newInstance();
-        statsFragment = StatsFragment.newInstance();
-        colorFragment = CalendarFragment.newInstance();
-
-        // show home fragment
-        fragmentManager.beginTransaction().replace(R.id.content, homeFragment).commit();
+    @Override
+    public void onBackPressed() {
+        if (mPager.getCurrentItem() == 0) {
+            // If the user is currently looking at the first step, allow the system to handle the
+            // Back button. This calls finish() on this activity and pops the back stack.
+            super.onBackPressed();
+        } else {
+            // Otherwise, select the previous step.
+            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+        }
     }
 
     @Override
@@ -110,4 +166,69 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return HomeFragment.newInstance();
+                case 1:
+                    return StatsFragment.newInstance();
+                case 2:
+                    return CalendarFragment.newInstance();
+            }
+            return HomeFragment.newInstance();
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
+        }
+    }
+
+    private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
+        private static final float MIN_SCALE = 0.85f;
+        private static final float MIN_ALPHA = 0.5f;
+
+        public void transformPage(View view, float position) {
+            int pageWidth = view.getWidth();
+            int pageHeight = view.getHeight();
+
+            if (position < -1) { // [-Infinity,-1)
+                // This page is way off-screen to the left.
+                view.setAlpha(0);
+
+            } else if (position <= 1) { // [-1,1]
+                // Modify the default slide transition to shrink the page as well
+                float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));
+                float vertMargin = pageHeight * (1 - scaleFactor) / 2;
+                float horzMargin = pageWidth * (1 - scaleFactor) / 2;
+                if (position < 0) {
+                    view.setTranslationX(horzMargin - vertMargin / 2);
+                } else {
+                    view.setTranslationX(-horzMargin + vertMargin / 2);
+                }
+
+                // Scale the page down (between MIN_SCALE and 1)
+                view.setScaleX(scaleFactor);
+                view.setScaleY(scaleFactor);
+
+                // Fade the page relative to its size.
+                view.setAlpha(MIN_ALPHA +
+                        (scaleFactor - MIN_SCALE) /
+                                (1 - MIN_SCALE) * (1 - MIN_ALPHA));
+
+            } else { // (1,+Infinity]
+                // This page is way off-screen to the right.
+                view.setAlpha(0);
+            }
+        }
+    }
+
+
 }
