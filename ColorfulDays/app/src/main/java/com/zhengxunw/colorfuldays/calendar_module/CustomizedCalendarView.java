@@ -2,6 +2,7 @@ package com.zhengxunw.colorfuldays.calendar_module;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -14,6 +15,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
@@ -31,6 +33,8 @@ public class CustomizedCalendarView extends LinearLayout {
 
     // how many days to show, defaults to six weeks, 42 days
     private static final int DAYS_COUNT = 42;
+
+    public static final String DAILY_TASK_INTENT_EXTRA_KEY = "date";
 
     // current displayed month
     private Calendar currentDate = TimeUtils.getCurrentCalendar();
@@ -113,9 +117,15 @@ public class CustomizedCalendarView extends LinearLayout {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Date date = (Date) adapterView.getItemAtPosition(position);
-                Intent intent = new Intent(getContext(), DailyTaskHistoryActivity.class);
-                intent.putExtra("date", TimeUtils.DATE_FORMAT_AS_KEY.format(date));
-                getContext().startActivity(intent);
+                Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionByDate(TimeUtils.getDateKey(date));
+                cursor.moveToFirst();
+                if (cursor.getCount() > 0) {
+                    Intent intent = new Intent(getContext(), DailyTaskHistoryActivity.class);
+                    intent.putExtra(DAILY_TASK_INTENT_EXTRA_KEY, TimeUtils.DATE_FORMAT_AS_KEY.format(date));
+                    getContext().startActivity(intent);
+                } else {
+                    Toast.makeText(getContext(), "Blank day.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -157,8 +167,8 @@ public class CustomizedCalendarView extends LinearLayout {
         return cells;
     }
 
-    private int generateTodayColor() {
-        return DatabaseHelper.getInstance(getContext()).generateColorOnDate(TimeUtils.getCurrentDateKey());
+    private int generateDayColor(Date date) {
+        return DatabaseHelper.getInstance(getContext()).generateColorOnDate(TimeUtils.getDateKey(date));
     }
 
     private class CalendarAdapter extends ArrayAdapter<Date> {
@@ -197,20 +207,12 @@ public class CustomizedCalendarView extends LinearLayout {
                 ((TextView)view).setTextColor(getResources().getColor(R.color.greyed_out));
             } else {
                 // if it is today, set it to blue/bold
-                int bgColor;
+                int bgColor = generateDayColor(date);
                 if (day == todayDate.getDate() && month == todayDate.getMonth() && year == todayDate.getYear()) {
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
-                    bgColor = generateTodayColor();
-                } else {
-                    String dateKey = TimeUtils.DATE_FORMAT_AS_KEY.format(date.getTime());
-                    bgColor = DatabaseHelper.getInstance(getContext()).getDayColor(dateKey);
                 }
+                ((TextView) view).setTextColor(CustomizedColorUtils.getTextColor(bgColor));
                 view.setBackgroundColor(bgColor);
-                if (CustomizedColorUtils.isLightColor(bgColor) || CustomizedColorUtils.isBgTransparent(bgColor)) {
-                    ((TextView) view).setTextColor(Color.BLACK);
-                } else {
-                    ((TextView) view).setTextColor(Color.WHITE);
-                }
             }
 
             ((TextView)view).setText(String.valueOf(date.getDate()));

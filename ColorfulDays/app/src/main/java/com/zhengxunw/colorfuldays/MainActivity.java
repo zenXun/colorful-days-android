@@ -17,12 +17,15 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 import com.zhengxunw.colorfuldays.stats_module.TaskDetailActivity;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
 import com.zhengxunw.colorfuldays.today_module.HomeFragment;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -72,18 +75,15 @@ public class MainActivity extends AppCompatActivity {
 //        c.set(2018, 2, 11, 0, 0);
 //        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
 //        c.set(2018, 2, 11, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Reading", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, 1);
 //        c.set(2018, 2, 12, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Workout", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 2, 1);
 //        c.set(2018, 2, 13, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Android", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 1);
 //        c.set(2018, 2, 14, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Finance", 1);
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, 1);
 //        c.set(2018, 2, 15, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), "Blockchain", 1);
-
-
-        db.populateColorTable();
+//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, 1);
 
         mPagerAdapter = new ScreenSlidePagerAdapter(fragmentManager);
         mPager.setAdapter(mPagerAdapter);

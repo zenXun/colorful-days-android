@@ -257,7 +257,6 @@ public class HomeFragment extends Fragment {
                 switchTaskStateToIdle(id);
             }
             Toast.makeText(getContext(), name + " " + timeAdded, Toast.LENGTH_SHORT).show();
-            notifyAdapters();
         }
     }
 
@@ -304,7 +303,6 @@ public class HomeFragment extends Fragment {
                 public void onCancel(DialogInterface dialogInterface) {
                     switchTaskStateToIdle(taskItem.getId());
                     Toast.makeText(getContext(), taskItem.getTaskName() + " is canceled", Toast.LENGTH_SHORT).show();
-                    notifyAdapters();
                 }
             });
             timePickerDialog.setTitle(taskItem.getTaskName());

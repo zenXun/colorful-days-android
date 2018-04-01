@@ -217,14 +217,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(DatabaseConstants.getTransactionByDateSQL(date), null);
     }
 
-    private Cursor getLastTransactionEntry() {
-        return db.rawQuery(DatabaseConstants.getLastTransactionSQL(), null);
-    }
-
-    private Cursor getFirstTransactionEntry() {
-        return db.rawQuery(DatabaseConstants.getFirstTransactionSQL(), null);
-    }
-
     /**
      * color table
      * */
@@ -235,72 +227,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(CALENDAR_TABLE_NAME, null, contentValues) != -1;
     }
 
-    public int getDayColor(String date) {
-        Cursor cursor = db.rawQuery(getColorOfDate(date), null);
-        cursor.moveToFirst();
-        if (cursor.getCount() > 0) {
-            return getColorInColorTable(cursor);
-        }
-        return Color.WHITE;
-    }
-
-    private Cursor getLastCalendarEntry() {
-        return db.rawQuery(getLastCalendarEntrySQL(), null);
-    }
-
     /**
      * calendar related
      * */
-
-    public void populateColorTable() {
-        Cursor lastTransCursor = getLastTransactionEntry();
-        lastTransCursor.moveToFirst();
-        // transaction doesn't exist, no need to populate color
-        if (lastTransCursor.getCount() == 0) {
-            return;
-        }
-        String lastTransDate = lastTransCursor.getString(lastTransCursor.getColumnIndex(TRANSACTION_TABLE_DATE));
-        lastTransCursor.close();
-
-        Cursor lastColorEntryCursor = getLastCalendarEntry();
-        lastColorEntryCursor.moveToFirst();
-        // transaction exists but color doesn't exist, populate color anyway
-        // need to populate dates based on all transactions
-        if (lastColorEntryCursor.getCount() == 0) {
-            Cursor firstTransEntryCursor = getFirstTransactionEntry();
-            firstTransEntryCursor.moveToFirst();
-            String firstTransDate = firstTransEntryCursor.getString(firstTransEntryCursor.getColumnIndex(TRANSACTION_TABLE_DATE));
-            populate(firstTransDate, lastTransDate);
-            return;
-        }
-
-        String lastColorDate = lastColorEntryCursor.getString(lastColorEntryCursor.getColumnIndex(CALENDAR_TABLE_DATE));
-        lastColorEntryCursor.close();
-
-        // transaction exists and color exists, check whether color is out-dated
-        // need to populate dates from the last color date to the last transaction date
-        if (!lastTransDate.equals(lastColorDate)) {
-            populate(lastColorDate, lastTransDate);
-        }
-    }
-
-    private void populate(String startDateKey, String endDateKey) {
-        for (String key : getKeysToBePopulated(startDateKey, endDateKey)) {
-            appendCalendarEntry(key, generateColorOnDate(key));
-        }
-    }
-
-    private List<String> getKeysToBePopulated(String startDateKey, String endDateKey) {
-        List<String> ret = new ArrayList<>();
-        Calendar endDate = TimeUtils.toCalendar(endDateKey);
-        Calendar startDate = TimeUtils.toCalendar(startDateKey);
-        startDate.add(Calendar.DAY_OF_MONTH, 1);
-        while (startDate.before(endDate)) {
-            ret.add(TimeUtils.toDateStr(startDate));
-            startDate.add(Calendar.DAY_OF_MONTH, 1);
-        }
-        return ret;
-    }
 
     public int generateColorOnDate(String key) {
         Map<Integer, Float> colorToHour = new HashMap<>();

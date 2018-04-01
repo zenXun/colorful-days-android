@@ -21,6 +21,12 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <TextView
+        android:id="@+id/date_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"/>
+
     <ListView
         android:id="@+id/today_tasks"
         android:layout_width="match_parent"

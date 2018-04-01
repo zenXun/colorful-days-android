@@ -31,6 +31,10 @@ public class TimeUtils {
         return DATE_FORMAT_AS_KEY.format(getTodayDate());
     }
 
+    public static String getDateKey(Date date) {
+        return DATE_FORMAT_AS_KEY.format(date);
+    }
+
     public static String getCountingTime(long millis) {
         return getCountingTime(TimeUtils.getMinute(millis), TimeUtils.getSecond(millis));
     }

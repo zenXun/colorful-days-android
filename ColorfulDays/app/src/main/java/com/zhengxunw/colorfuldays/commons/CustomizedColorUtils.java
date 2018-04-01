@@ -63,9 +63,12 @@ public class CustomizedColorUtils {
     }
 
     public static int getTextColor(int bgColor) {
-        if (bgColor == Color.WHITE && !CustomizedColorUtils.isLightColor(bgColor)) {
+        if (bgColor == Color.WHITE && !isLightColor(bgColor)) {
             return Color.WHITE;
         }
-        return Color.BLACK;
+        if (isLightColor(bgColor) || isBgTransparent(bgColor)) {
+            return Color.BLACK;
+        }
+        return Color.WHITE;
     }
 }

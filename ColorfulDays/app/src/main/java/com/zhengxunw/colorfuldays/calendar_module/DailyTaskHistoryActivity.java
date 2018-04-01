@@ -38,8 +38,10 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.daily_task_history);
-        ListView todayTasks = (ListView) findViewById(R.id.today_tasks);
-        String dateKey = getIntent().getStringExtra("date");
+        ListView todayTasks = findViewById(R.id.today_tasks);
+        String dateKey = getIntent().getStringExtra(CustomizedCalendarView.DAILY_TASK_INTENT_EXTRA_KEY);
+        TextView dateTV = findViewById(R.id.date_tv);
+        dateTV.setText(dateKey);
 
         ArrayList<TaskItem> tasks = new ArrayList<>();
         Cursor transCursor = DatabaseHelper.getInstance(getApplicationContext()).queryTransactionGroupByTaskByDate(dateKey);
@@ -51,7 +53,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         } while (transCursor.moveToNext());
         todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.daily_activity_toolbar);
+        Toolbar toolbar = findViewById(R.id.daily_activity_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
