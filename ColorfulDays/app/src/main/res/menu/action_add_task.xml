@@ -6,7 +6,7 @@
     <item
         android:title="Add Task to DB"
         android:id="@+id/add_task_action"
-        android:icon="@drawable/ic_add_black_24dp"
+        android:icon="@drawable/ic_check_black_24dp"
         app:showAsAction="always"
         android:orderInCategory="0"/>
 </menu>

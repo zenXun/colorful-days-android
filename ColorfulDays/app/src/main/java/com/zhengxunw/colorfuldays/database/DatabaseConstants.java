@@ -60,7 +60,8 @@ public class DatabaseConstants {
     }
 
     static String getTransactionsGroupByTaskOnDateSQL(String date) {
-        return String.format("SELECT t.%s, SUM(t.%s) AS %s, tt.%s, tt.%s, tt.%s ", TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE)
+        return String.format("SELECT t.%s AS %s, SUM(t.%s) AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s ",
+                TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE, TASK_TABLE_IS_IDLE)
                 + String.format("FROM %s t ", TRANSACTION_TABLE_NAME)
                 + String.format("INNER JOIN (SELECT * FROM %s) tt ", TASK_TABLE_NAME)
                 + String.format("ON t.%s = tt.%s ", TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID)
@@ -86,6 +87,6 @@ public class DatabaseConstants {
     }
 
     static String getTransactionByDateSQL(String date) {
-        return String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date);
+        return String.format("SELECT * FROM %s WHERE %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date);
     }
 }

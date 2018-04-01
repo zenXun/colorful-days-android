@@ -61,4 +61,11 @@ public class CustomizedColorUtils {
         }
         return (int) (1.12 * Math.log((double) hour + Math.E) + 125.575);
     }
+
+    public static int getTextColor(int bgColor) {
+        if (bgColor == Color.WHITE && !CustomizedColorUtils.isLightColor(bgColor)) {
+            return Color.WHITE;
+        }
+        return Color.BLACK;
+    }
 }

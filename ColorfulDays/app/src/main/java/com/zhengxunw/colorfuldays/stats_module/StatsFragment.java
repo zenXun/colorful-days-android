@@ -86,14 +86,15 @@ public class StatsFragment extends Fragment {
             TextView hourPartTV = view.findViewById(R.id.task_hour_part);
 
             final TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
+            int bgColor = taskItem.getColor();
+            int txtColor = CustomizedColorUtils.getTextColor(bgColor);
             String hourPart = TimeUtils.getDisplayHour(taskItem.getTaskHour());
+
             taskPartTV.setText(taskItem.getTaskName());
             hourPartTV.setText(hourPart);
-            if (!CustomizedColorUtils.isLightColor(taskItem.getColor())) {
-                taskPartTV.setTextColor(Color.WHITE);
-                hourPartTV.setTextColor(Color.WHITE);
-            }
-            view.setBackgroundColor(taskItem.getColor());
+            view.setBackgroundColor(bgColor);
+            taskPartTV.setTextColor(txtColor);
+            hourPartTV.setTextColor(txtColor);
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -50,6 +51,22 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         } while (transCursor.moveToNext());
         todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.daily_activity_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
+    }
+    
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     class todayTasksAdapter extends ArrayAdapter<TaskItem> {
@@ -72,12 +89,11 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             taskPartTV.setText(task.getTaskName());
             hourPartTV.setText(TimeUtils.getDisplayHour(task.getTaskHour()));
 
-            int color = task.getColor();
-            if (!CustomizedColorUtils.isLightColor(color)) {
-                taskPartTV.setTextColor(Color.WHITE);
-                hourPartTV.setTextColor(Color.WHITE);
-            }
-            convertView.setBackgroundColor(color);
+            int bgColor = task.getColor();
+            int txtColor = CustomizedColorUtils.getTextColor(bgColor);
+            taskPartTV.setTextColor(txtColor);
+            hourPartTV.setTextColor(txtColor);
+            convertView.setBackgroundColor(bgColor);
             // Return the completed view to render on screen
             return convertView;
         }

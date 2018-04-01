@@ -24,7 +24,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".calendar_module.DailyTaskHistoryActivity"
             android:label="@string/daily_task_history_activity"
-            android:theme="@style/Theme.AppCompat"/>
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
