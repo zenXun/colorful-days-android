@@ -8,12 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
-import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_COLOR;
@@ -30,10 +26,8 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getCalendarTableCreationSQL;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfDate;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfTaskIdSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getDropTableSQL;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getLastCalendarEntrySQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskByIdSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskTableCreationSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTasksQueryByStateSQL;
@@ -226,11 +220,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor queryTransactionByDate(String date) {
-        return db.rawQuery(DatabaseConstants.getTransactionByDateSQL(date), null);
+        String sql = DatabaseConstants.getRecordsByFields(TRANSACTION_TABLE_NAME, new Pair(TRANSACTION_TABLE_DATE, date));
+        return db.rawQuery(sql, null);
+    }
+
+    public Cursor queryUniqueTransactionsDate(int id) {
+        return db.rawQuery(DatabaseConstants.getUniqueTransanctionDateSQL(id), null);
+    }
+
+    public Cursor queryTransactionByTask(int id) {
+        String sql = DatabaseConstants.getRecordsByFields(TRANSACTION_TABLE_NAME, new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
+        return db.rawQuery(sql, null);
     }
 
     public Cursor queryTransactionByDateAndTask(String date, int id) {
-        return db.rawQuery(DatabaseConstants.getTransactionsByDateAndTaskSQL(date, id), null);
+        String sql = DatabaseConstants.getRecordsByFields(TRANSACTION_TABLE_NAME, new Pair(TRANSACTION_TABLE_DATE, date), new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
+        return db.rawQuery(sql, null);
     }
 
     public Cursor queryHourByDateAndTask(String date, int id) {
@@ -269,6 +274,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } while (dateCursor.moveToNext());
         }
         return CustomizedColorUtils.mixColors(colorToHour);
+    }
+
+    class Pair {
+
+        String fieldName;
+        String val;
+
+        Pair(String fieldName, String val) {
+            this.fieldName = fieldName;
+            this.val = val;
+        }
+
+        public String getFieldName() {
+            return fieldName;
+        }
+
+        public String getVal() {
+            return val;
+        }
     }
 
 }

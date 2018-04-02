@@ -92,8 +92,16 @@ public class StatsFragment extends Fragment {
             String hourPart = TimeUtils.getDisplayHour(taskItem.getTaskHour());
 
             if (firstDate != null) {
+                Cursor uniqueDatesCursor = DatabaseHelper.getInstance(getContext()).queryUniqueTransactionsDate(taskItem.getId());
+                uniqueDatesCursor.moveToFirst();
+                int days = uniqueDatesCursor.getCount();
+                uniqueDatesCursor.close();
                 TextView datePartTV = view.findViewById(R.id.task_start_date_tv);
-                datePartTV.setText("Start from: " + firstDate);
+                TextView daysPartTV = view.findViewById(R.id.task_days_tv);
+                datePartTV.setText("Started from: " + firstDate);
+                if (days > 0) {
+                    daysPartTV.setText("Insisted for " + days + " days");
+                }
             }
             taskPartTV.setText(taskItem.getTaskName());
             hourPartTV.setText(hourPart);

@@ -86,12 +86,20 @@ public class DatabaseConstants {
         return sql;
     }
 
-    static String getTransactionByDateSQL(String date) {
-        return String.format("SELECT * FROM %s WHERE %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date);
+    static String getUniqueTransanctionDateSQL(int taskId) {
+        String sql = String.format("SELECT DISTINCT(%s) FROM %s WHERE %s='%s'", TRANSACTION_TABLE_DATE, TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskId);
+        return sql;
     }
 
-    static String getTransactionsByDateAndTaskSQL(String date, int taskId) {
-        return String.format("SELECT * FROM %s WHERE %s='%s' AND %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId);
+    static String getRecordsByFields(String tableName, DatabaseHelper.Pair... pairs) {
+        StringBuilder builder = new StringBuilder(String.format("SELECT * FROM %s", tableName));
+
+        builder.append(String.format(" WHERE %s='%s'", pairs[0].getFieldName(), pairs[0].getVal()));
+        for (int i = 1; i < pairs.length; i++) {
+            builder.append(String.format(" AND %s='%s'", pairs[i].getFieldName(), pairs[i].getVal()));
+        }
+
+        return builder.toString();
     }
 
     static String getHoursByDateAndTaskSQL(String date, int taskId) {
