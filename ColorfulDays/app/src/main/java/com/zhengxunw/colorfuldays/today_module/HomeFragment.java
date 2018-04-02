@@ -99,6 +99,7 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
         homeContext.loadTaskStartTime();
+        notifyAdapters();
     }
 
     @Override

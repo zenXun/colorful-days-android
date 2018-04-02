@@ -11,6 +11,8 @@ import com.zhengxunw.colorfuldays.R;
 
 public class CalendarFragment extends Fragment {
 
+    private CustomizedCalendarView cv;
+
     public CalendarFragment() {
         // Required empty public constructor
     }
@@ -34,8 +36,14 @@ public class CalendarFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_color, container, false);
 
-        CustomizedCalendarView cv = view.findViewById(R.id.calendar_view);
+        cv = view.findViewById(R.id.calendar_view);
         cv.updateCalendar();
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        cv.updateCalendar();
     }
 }
