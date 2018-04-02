@@ -88,11 +88,9 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.stats_item, parent, false);
             }
             // Lookup view for data population
-            TextView taskTimesTV = convertView.findViewById(R.id.task_start_date_tv);
+            TextView taskTimesTV = convertView.findViewById(R.id.task_days_tv);
             TextView taskPartTV = (TextView) convertView.findViewById(R.id.task_name_part);
             TextView hourPartTV = (TextView) convertView.findViewById(R.id.task_hour_part);
-
-            taskTimesTV.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
 
             Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionByDateAndTask(date, task.getId());
             cursor.moveToFirst();

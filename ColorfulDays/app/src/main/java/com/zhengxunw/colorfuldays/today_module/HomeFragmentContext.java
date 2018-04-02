@@ -29,15 +29,15 @@ class HomeFragmentContext {
     }
 
     private Handler handler = new Handler();
-    private SparseArray<Long> taskToTime = new SparseArray<>();
-    private SparseArray<TextView> taskToView = new SparseArray<>();
-    private SparseArray<Runnable> taskToRunnable = new SparseArray<>();
+    private Map<Integer, Long> taskToTime = new HashMap<>();
+    private Map<Integer, TextView> taskToView = new HashMap<>();
+    private Map<Integer, Runnable> taskToRunnable = new HashMap<>();
 
     void serializeTaskStartTime() {
         Set<String> ret = new HashSet<>();
-        for (int idx = 0; idx < taskToTime.size(); idx++) {
-            int key = taskToTime.keyAt(idx);
-            ret.add(key + Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR + String.valueOf(taskToTime.get(key)));
+        for (Map.Entry<Integer, Long> entry : taskToTime.entrySet()) {
+            int key = entry.getKey();
+            ret.add(key + Constants.LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR + String.valueOf(entry.getValue()));
         }
         SharedPreferences sharedPref = fragmentActivity.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -62,17 +62,29 @@ class HomeFragmentContext {
                 .apply();
     }
     void clearTaskResource(int taskId) {
-        taskToView.remove(taskId);
-        taskToRunnable.remove(taskId);
         taskToTime.remove(taskId);
     }
 
-    void stopRunningTask(int taskId) {
-        Runnable runnable = taskToRunnable.get(taskId);
-        if (runnable == null) {
-            return;
+    boolean hasBindedTextView(int taskId) {
+        return taskToView.containsKey(taskId);
+    }
+
+    void updateBindedTextView(int taskId, TextView tv) {
+        taskToView.put(taskId, tv);
+    }
+
+    void stopRunningTask() {
+        for (Map.Entry<Integer, Runnable> entry : taskToRunnable.entrySet()) {
+            int key = entry.getKey();
+            handler.removeCallbacks(entry.getValue());
         }
-        handler.removeCallbacks(runnable);
+        taskToRunnable.clear();
+        taskToView.clear();
+    }
+
+    void stopRunningTask(int taskId) {
+        handler.removeCallbacks(taskToRunnable.get(taskId));
+        taskToRunnable.remove(taskId);
     }
 
     void startRunningTask(Runnable task) {
@@ -100,16 +112,23 @@ class HomeFragmentContext {
     }
 
     boolean isTaskRunning(int taskId) {
-        return taskToRunnable.get(taskId) != null;
+        return taskToRunnable.containsKey(taskId);
     }
 
     boolean didTaskStart(int taskId) {
-        return taskToTime.get(taskId) != null;
+        return taskToTime.containsKey(taskId);
     }
 
     void putTaskStartTime(int taskId, long startTime) {
         taskToTime.put(taskId, startTime);
     }
 
+    void clearTaskToView() {
+        taskToTime.clear();
+    }
+
+    void clearRunningThreads() {
+        taskToRunnable.clear();
+    }
 
 }

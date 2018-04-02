@@ -98,7 +98,9 @@ public class MainActivity extends AppCompatActivity {
         mPagerAdapter = new ScreenSlidePagerAdapter(fragmentManager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        mPager.setOffscreenPageLimit(0);
         mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -106,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                mPager.getAdapter().notifyDataSetChanged();
                 switch (position) {
                     case 0:
                         bottomNavigationView.getMenu().getItem(0).setChecked(true);
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
-        private static final float MIN_SCALE = 0.9f;
+        private static final float MIN_SCALE = 0.85f;
         private static final float MIN_ALPHA = 0.5f;
 
         public void transformPage(View view, float position) {

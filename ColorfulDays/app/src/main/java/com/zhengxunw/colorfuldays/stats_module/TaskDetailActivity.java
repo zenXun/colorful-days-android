@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -124,6 +125,9 @@ public class TaskDetailActivity extends AppCompatActivity {
         BarData barData = new BarData(barDataSet);
         barChart.getXAxis().setValueFormatter(new LabelFormatter(labels));
         barChart.setData(barData);
+        Description description = new Description();
+        description.setText("The most recent week's record.");
+        barChart.setDescription(description);
 
         deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override

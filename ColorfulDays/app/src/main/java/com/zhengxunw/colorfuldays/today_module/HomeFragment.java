@@ -99,19 +99,19 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
         homeContext.loadTaskStartTime();
-        notifyAdapters();
-        displayCurrentDate();
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        homeContext.stopRunningTask();
         homeContext.serializeTaskStartTime();
     }
 
     private void notifyAdapters() {
         idleListAdapter.changeCursor(DatabaseHelper.getInstance(getContext()).getTaskByState(TaskItem.IDLE));
         idleListAdapter.notifyDataSetChanged();
+
         workingListAdapter.changeCursor(DatabaseHelper.getInstance(getContext()).getTaskByState(TaskItem.WORKING));
         workingListAdapter.notifyDataSetChanged();
     }
@@ -180,13 +180,12 @@ public class HomeFragment extends Fragment {
         public void bindView(View view, Context context, Cursor cursor) {
             TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
             int taskId = taskItem.getId();
+            homeContext.stopRunningTask(taskId);
             homeContext.putTaskTextView(taskId, (TextView) view.findViewById(android.R.id.text2));
-            if (!homeContext.isTaskRunning(taskId)) {
-                Runnable runnable = new displayTimerOnView(taskId);
-                homeContext.putRunningTask(taskId, runnable);
-                if (!homeContext.didTaskStart(taskId)) {
-                    homeContext.putTaskStartTime(taskId, System.currentTimeMillis());
-                }
+            Runnable runnable = new displayTimerOnView(taskId, homeContext);
+            homeContext.putRunningTask(taskId, runnable);
+            if (!homeContext.didTaskStart(taskId)) {
+                homeContext.putTaskStartTime(taskId, System.currentTimeMillis());
             }
             view.setOnClickListener(new workingTaskOnClickListener(taskItem));
             String taskName = taskItem.getTaskName();
@@ -198,7 +197,7 @@ public class HomeFragment extends Fragment {
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);
             taskView.setTextColor(txtColor);
             timeView.setTextColor(txtColor);
-            homeContext.startRunningTask(homeContext.getRunningTask(taskItem.getId()));
+            homeContext.startRunningTask(runnable);
         }
     }
 
@@ -232,7 +231,7 @@ public class HomeFragment extends Fragment {
 
     private void switchTaskStateToIdle(int taskId) {
         DatabaseHelper.getInstance(getContext()).updateTaskState(taskId, TaskItem.IDLE);
-        homeContext.stopRunningTask(taskId);
+        homeContext.stopRunningTask();
         homeContext.clearTaskResource(taskId);
         notifyAdapters();
     }
@@ -312,14 +311,19 @@ public class HomeFragment extends Fragment {
     }
 
     class displayTimerOnView implements Runnable {
+
         int taskId;
-        displayTimerOnView(int taskId) {
+        private HomeFragmentContext homeFragmentContext;
+
+        displayTimerOnView(int taskId, HomeFragmentContext homeFragmentContext) {
             this.taskId = taskId;
+            this.homeFragmentContext = homeFragmentContext;
         }
+
         public void run() {
-            long millis = System.currentTimeMillis() - homeContext.getTaskStartTime(taskId);
-            homeContext.getTaskTextView(taskId).setText(TimeUtils.getCountingTime(millis));
-            homeContext.startRunningTask(this);
+            long millis = System.currentTimeMillis() - homeFragmentContext.getTaskStartTime(taskId);
+            homeFragmentContext.getTaskTextView(taskId).setText(TimeUtils.getCountingTime(millis));
+            homeFragmentContext.startRunningTask(this);
         }
     }
 
