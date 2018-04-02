@@ -94,4 +94,9 @@ public class DatabaseConstants {
         return String.format("SELECT * FROM %s WHERE %s='%s' AND %s='%s'", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId);
     }
 
+    static String getHoursByDateAndTaskSQL(String date, int taskId) {
+        return String.format("SELECT SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
+                TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
+    }
+
 }

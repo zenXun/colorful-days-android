@@ -2,6 +2,7 @@ package com.zhengxunw.colorfuldays.stats_module;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,11 +14,24 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
 import com.zhengxunw.colorfuldays.R;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
 
@@ -29,6 +43,7 @@ public class TaskDetailActivity extends AppCompatActivity {
     private Button deleteTaskBtn;
     private TaskItem taskItem;
     private ColorPicker cp;
+    private BarChart barChart;
     private boolean isNewTask = false;
 
     @Override
@@ -42,12 +57,14 @@ public class TaskDetailActivity extends AppCompatActivity {
         mEditTaskInitHour = findViewById(R.id.edit_task_init_hour);
         colorSettingBtn = findViewById(R.id.color_setting);
         deleteTaskBtn = findViewById(R.id.delete_task);
+        barChart = findViewById(R.id.chart);
 
         taskItem = getIntent().getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
         
         if (taskItem == null) {
             isNewTask = true;
             deleteTaskBtn.setVisibility(View.INVISIBLE);
+            barChart.setVisibility(View.INVISIBLE);
             deleteTaskBtn.setClickable(false);
             taskItem = new TaskItem();
         }
@@ -83,6 +100,31 @@ public class TaskDetailActivity extends AppCompatActivity {
         TextView hourTV = findViewById(R.id.task_hour_tv);
         hourTV.setText(R.string.existing_task_hour_tv_hint);
 
+        List<BarEntry> entries = new ArrayList<>();
+        String[] labels = new String[7];
+        int taskId = taskItem.getId();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_WEEK, -6);
+
+        for (int i = 0; i < 7; i++) {
+            String dateKey = TimeUtils.getDateKey(cal.getTime());
+            Cursor cursor = DatabaseHelper.getInstance(getApplicationContext()).queryHourByDateAndTask(dateKey, taskId);
+            cursor.moveToFirst();
+            labels[i] = TimeUtils.getWeekday(cal);
+            if (cursor.getCount() > 0) {
+                float time = DatabaseHelper.getHourInTransTable(cursor);
+                entries.add(new BarEntry(i, time));
+            } else {
+                entries.add(new BarEntry(i, 0));
+            }
+            cal.add(Calendar.DAY_OF_WEEK, 1);
+        }
+
+        BarDataSet barDataSet = new BarDataSet(entries, "time spent (in hour)");
+        BarData barData = new BarData(barDataSet);
+        barChart.getXAxis().setValueFormatter(new LabelFormatter(labels));
+        barChart.setData(barData);
+
         deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,6 +134,19 @@ public class TaskDetailActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
+    }
+
+    private class LabelFormatter implements IAxisValueFormatter {
+        private final String[] mLabels;
+
+        public LabelFormatter(String[] labels) {
+            mLabels = labels;
+        }
+
+        @Override
+        public String getFormattedValue(float value, AxisBase axis) {
+            return mLabels[(int) value];
+        }
     }
 
     @Override

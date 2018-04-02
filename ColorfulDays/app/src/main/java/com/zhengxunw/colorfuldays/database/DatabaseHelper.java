@@ -233,6 +233,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(DatabaseConstants.getTransactionsByDateAndTaskSQL(date, id), null);
     }
 
+    public Cursor queryHourByDateAndTask(String date, int id) {
+        return db.rawQuery(DatabaseConstants.getHoursByDateAndTaskSQL(date, id), null);
+    }
+
     /**
      * color table
      * */

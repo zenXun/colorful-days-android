@@ -12,6 +12,7 @@
     <string name="existing_task_hour_tv_hint">Hours Spent</string>
     <string name="task_hour_tv_eg">Eg: 10</string>
     <string name="empty_task_name_msg">Task name is required.</string>
+    <string name="delete_button_txt">Delete Task</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

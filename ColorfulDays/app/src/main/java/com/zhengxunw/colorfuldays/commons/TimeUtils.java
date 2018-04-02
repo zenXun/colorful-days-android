@@ -19,6 +19,11 @@ public class TimeUtils {
     public static final DateFormat DATE_FORMAT_AS_KEY = new SimpleDateFormat("dd-MMM-yyyy");
     public static final DateFormat DATE_FORMAT_CALENDAR_TITLE = new SimpleDateFormat("MMM yyyy");
 
+    public static String getWeekday(Calendar calendar) {
+        DateFormat weekdayFormat = new SimpleDateFormat("E");
+        return weekdayFormat.format(calendar.getTime());
+    }
+
     public static Date getTodayDate() {
         return Calendar.getInstance(Locale.US).getTime();
     }
