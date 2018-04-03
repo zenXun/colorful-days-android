@@ -23,9 +23,13 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.jaredrummler.android.colorpicker.ColorPickerDialog;
+import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
+import com.zhengxunw.colorfuldays.MainActivity;
 import com.zhengxunw.colorfuldays.R;
+import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
@@ -36,14 +40,13 @@ import java.util.List;
 
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
 
-public class TaskDetailActivity extends AppCompatActivity {
+public class TaskDetailActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
     private EditText mEditTaskName;
     private EditText mEditTaskInitHour;
     private Button colorSettingBtn;
     private Button deleteTaskBtn;
     private TaskItem taskItem;
-    private ColorPicker cp;
     private BarChart barChart;
     private boolean isNewTask = false;
     private Context context;
@@ -51,13 +54,12 @@ public class TaskDetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = findViewById(R.id.toolbar);
         context = getApplicationContext();
         db = DatabaseHelper.getInstance(getApplicationContext());
-        cp = new ColorPicker(TaskDetailActivity.this);
         mEditTaskName = findViewById(R.id.edit_task_name);
         mEditTaskInitHour = findViewById(R.id.edit_task_init_hour);
         colorSettingBtn = findViewById(R.id.color_setting);
@@ -83,15 +85,12 @@ public class TaskDetailActivity extends AppCompatActivity {
         colorSettingBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                cp.setCallback(new ColorPickerCallback() {
-                    @Override
-                    public void onColorChosen(int color) {
-                        taskItem.setColor(color);
-                        colorSettingBtn.setBackgroundColor(color);
-                        cp.dismiss();
-                    }
-                });
-                cp.show();
+                ColorPickerDialog.newBuilder()
+                        .setDialogType(ColorPickerDialog.TYPE_PRESETS)
+                        .setAllowCustom(true)
+                        .setAllowPresets(false)
+                        .setColor(Color.BLACK)
+                        .show(TaskDetailActivity.this);
             }
         });
         setSupportActionBar(toolbar);
@@ -158,13 +157,11 @@ public class TaskDetailActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        cp.dismiss();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cp.dismiss();
     }
 
     @Override
@@ -209,4 +206,18 @@ public class TaskDetailActivity extends AppCompatActivity {
         onBackPressed();
         return true;
     }
+
+
+    @Override
+    public void onDialogDismissed(int dialogId) {
+
+    }
+
+    @Override
+    public void onColorSelected(int dialogId, int color) {
+        taskItem.setColor(color);
+        colorSettingBtn.setBackgroundColor(color);
+        colorSettingBtn.setTextColor(CustomizedColorUtils.getTextColor(color));
+    }
+
 }
