@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ public class StatsFragment extends Fragment {
 
     private AllTaskCursorAdapter allTaskListAdapter;
     private DatabaseHelper db;
+    private Context context;
 
     public StatsFragment() {
         // Required empty public constructor
@@ -44,13 +46,19 @@ public class StatsFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        context = getContext();
+        db = DatabaseHelper.getInstance(context);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
         ListView allTaskList = view.findViewById(R.id.all_task_list);
-        db = DatabaseHelper.getInstance(getContext());
-        allTaskListAdapter = new AllTaskCursorAdapter(getContext(), db.getTaskByState(TaskItem.ALL));
+        allTaskListAdapter = new AllTaskCursorAdapter(context, db.getTaskByState(TaskItem.ALL));
         allTaskList.setAdapter(allTaskListAdapter);
 
         return view;
@@ -65,7 +73,22 @@ public class StatsFragment extends Fragment {
     public void onStart() {
         super.onStart();
         allTaskListAdapter.changeCursor(db.getTaskByState(TaskItem.ALL));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         allTaskListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     public class AllTaskCursorAdapter extends android.widget.CursorAdapter {
@@ -81,40 +104,38 @@ public class StatsFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            TextView taskStripTV = view.findViewById(R.id.task_color_strip);
-            TextView taskPartTV = view.findViewById(R.id.task_name_part);
-            TextView hourPartTV = view.findViewById(R.id.task_hour_part);
+            TextView stripTV = view.findViewById(R.id.task_color_strip);
+            TextView taskTV = view.findViewById(R.id.task_name_part);
+            TextView hourTV = view.findViewById(R.id.task_hour_part);
 
             final TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
             int bgColor = taskItem.getColor();
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);
-            String firstDate = DatabaseHelper.getInstance(getContext()).getFirstTransactionDate(taskItem.getId());
-            String hourPart = TimeUtils.getDisplayHour(taskItem.getTaskHour());
+            String firstDate = db.getFirstTransactionDate(taskItem.getId());
 
             if (firstDate != null) {
-                Cursor uniqueDatesCursor = DatabaseHelper.getInstance(getContext()).queryUniqueTransactionsDate(taskItem.getId());
+                Cursor uniqueDatesCursor = db.queryUniqueTransactionsDate(taskItem.getId());
                 uniqueDatesCursor.moveToFirst();
                 int days = uniqueDatesCursor.getCount();
                 uniqueDatesCursor.close();
-                TextView datePartTV = view.findViewById(R.id.task_start_date_tv);
-                TextView daysPartTV = view.findViewById(R.id.task_days_tv);
-                datePartTV.setText("Started from: " + firstDate);
+                TextView startDateTV = view.findViewById(R.id.task_start_date_tv);
+                TextView lastingDaysTV = view.findViewById(R.id.task_days_tv);
+                startDateTV.setText("Started from: " + firstDate);
                 if (days > 0) {
-                    daysPartTV.setText("Insisted for " + days + " days");
+                    lastingDaysTV.setText("Insisted for " + days + " days");
                 }
             }
-            taskPartTV.setText(taskItem.getTaskName());
-            hourPartTV.setText(hourPart);
-            hourPartTV.setTextColor(txtColor);
-            taskStripTV.setBackgroundColor(bgColor);
-            hourPartTV.setBackgroundColor(bgColor);
+            taskTV.setText(taskItem.getTaskName());
+            hourTV.setText(TimeUtils.getDisplayHour(taskItem.getTaskHour()));
+            hourTV.setTextColor(txtColor);
+            hourTV.setBackgroundColor(bgColor);
+            stripTV.setBackgroundColor(bgColor);
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                    intent.putExtra(INTENT_EXTRA_TASK_ITEM, new TaskItem(taskItem.getId(),
-                            taskItem.getTaskName(), taskItem.getTaskHour(), taskItem.getColor(), taskItem.getState()));
+                    intent.putExtra(INTENT_EXTRA_TASK_ITEM, taskItem);
                     startActivity(intent);
                 }
             });

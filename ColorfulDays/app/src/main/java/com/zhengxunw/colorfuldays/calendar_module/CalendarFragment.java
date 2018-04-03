@@ -37,7 +37,6 @@ public class CalendarFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_color, container, false);
 
         cv = view.findViewById(R.id.calendar_view);
-        cv.updateCalendar();
         return view;
     }
 

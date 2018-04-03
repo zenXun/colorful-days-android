@@ -5,11 +5,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,12 +28,16 @@ import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.Date;
 
+import static android.content.ContentValues.TAG;
+
 public class HomeFragment extends Fragment {
 
     private TextView mTextDate;
     private IdleTaskCursorAdapter idleListAdapter;
     private WorkingTaskCursorAdapter workingListAdapter;
     private HomeFragmentContext homeContext;
+    private Context context;
+    private DatabaseHelper db;
 
     private View.OnDragListener taskDropListener = new View.OnDragListener() {
 
@@ -41,7 +45,15 @@ public class HomeFragment extends Fragment {
         public boolean onDrag(View view, DragEvent dragEvent){
             switch (dragEvent.getAction()) {
                 case DragEvent.ACTION_DROP:
-                    dropOperation((DragContext) dragEvent.getLocalState(), view);
+                    DragContext dragContext = (DragContext) dragEvent.getLocalState();
+                    String srcListType = dragContext.srcView.getTag().toString();
+                    String destListType = view.getTag().toString();
+                    if (srcListType.equals(Constants.IDLE_TASK_TAG)
+                            && destListType.equals(Constants.WORKING_TASK_TAG)) {
+                        DatabaseHelper.getInstance(getContext())
+                                .updateTaskState(dragContext.taskItem.getId(), TaskItem.WORKING);
+                        notifyAdapters();
+                    }
                     break;
             }
             return true;
@@ -71,6 +83,13 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        context = getContext();
+        db = DatabaseHelper.getInstance(context);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -82,12 +101,12 @@ public class HomeFragment extends Fragment {
 
         workingTaskList.setTag(Constants.WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDropListener);
-        workingListAdapter = new WorkingTaskCursorAdapter(getContext(), DatabaseHelper.getInstance(getContext()).getTaskByState(TaskItem.WORKING));
+        workingListAdapter = new WorkingTaskCursorAdapter(context, db.getTaskByState(TaskItem.WORKING));
         workingTaskList.setAdapter(workingListAdapter);
 
         idleTaskList.setTag(Constants.IDLE_TASK_TAG);
         idleTaskList.setOnDragListener(taskDropListener);
-        idleListAdapter = new IdleTaskCursorAdapter(getContext(), DatabaseHelper.getInstance(getContext()).getTaskByState(TaskItem.IDLE));
+        idleListAdapter = new IdleTaskCursorAdapter(context, db.getTaskByState(TaskItem.IDLE));
         idleTaskList.setAdapter(idleListAdapter);
 
         displayCurrentDate();
@@ -99,21 +118,36 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
         homeContext.loadTaskStartTime();
+        Log.d(TAG, "onStart: HomeFragment");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         notifyAdapters();
+        displayCurrentDate();
+        Log.d(TAG, "onResume: HomeFragment");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        homeContext.stopRunningTasks();
+        Log.d(TAG, "onPause: HomeFragment");
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        homeContext.stopRunningTask();
         homeContext.serializeTaskStartTime();
+        Log.d(TAG, "onStop: HomeFragment");
     }
 
     private void notifyAdapters() {
-        idleListAdapter.changeCursor(DatabaseHelper.getInstance(getContext()).getTaskByState(TaskItem.IDLE));
+        idleListAdapter.changeCursor(db.getTaskByState(TaskItem.IDLE));
         idleListAdapter.notifyDataSetChanged();
 
-        workingListAdapter.changeCursor(DatabaseHelper.getInstance(getContext()).getTaskByState(TaskItem.WORKING));
+        workingListAdapter.changeCursor(db.getTaskByState(TaskItem.WORKING));
         workingListAdapter.notifyDataSetChanged();
     }
 
@@ -138,28 +172,19 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            int bgColor = DatabaseHelper.getColorInTaskTable(cursor);
+            Log.d(TAG, "bindView: idle task on HomeFragment");
             TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
-            final DragContext dragContext = new DragContext(view, taskItem);
+            // listeners setup
             view.setOnClickListener(new idleTaskOnClickListener(taskItem));
-            view.setOnLongClickListener(new idleTaskOnLongClickListener(dragContext));
+            view.setOnLongClickListener(new idleTaskOnLongClickListener(new DragContext(view, taskItem)));
             view.setOnDragListener(taskDropListener);
+
+            // text population and color setting
+            int bgColor = DatabaseHelper.getColorInTaskTable(cursor);
             view.setBackgroundColor(bgColor);
             TextView task = view.findViewById(android.R.id.text1);
             task.setText(DatabaseHelper.getNameInTaskTable(cursor));
             task.setTextColor(CustomizedColorUtils.getTextColor(bgColor));
-        }
-    }
-
-    private void dropOperation(DragContext dragContext, View destView) {
-        TaskItem taskItem = dragContext.taskItem;
-        String srcListType = dragContext.srcView.getTag().toString();
-        String destListType = destView.getTag().toString();
-        if (srcListType.equals(Constants.IDLE_TASK_TAG)) {
-            if (destListType.equals(Constants.WORKING_TASK_TAG)) {
-                DatabaseHelper.getInstance(getContext()).updateTaskState(taskItem.getId(), TaskItem.WORKING);
-                notifyAdapters();
-            }
         }
     }
 
@@ -179,26 +204,34 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            Log.d(TAG, "bindView: working task on HomeFragment");
             TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
+            // time counting thread setup
             int taskId = taskItem.getId();
-            homeContext.stopRunningTask(taskId);
             homeContext.putTaskTextView(taskId, (TextView) view.findViewById(android.R.id.text2));
-            Runnable runnable = new displayTimerOnView(taskId, homeContext);
-            homeContext.putRunningTask(taskId, runnable);
+            Runnable runnable;
+            if (homeContext.isTaskRunning(taskId)) {
+                runnable = homeContext.getRunningTask(taskId);
+            } else {
+                runnable = new displayTimerOnView(taskId, homeContext);
+                homeContext.putRunningTask(taskId, runnable);
+            }
+            homeContext.startRunningTask(runnable);
             if (!homeContext.didTaskStart(taskId)) {
                 homeContext.putTaskStartTime(taskId, System.currentTimeMillis());
             }
+
             view.setOnClickListener(new workingTaskOnClickListener(taskItem));
-            String taskName = taskItem.getTaskName();
+
+            // color setting
             int bgColor = taskItem.getColor();
             view.setBackgroundColor(bgColor);
             TextView taskView = view.findViewById(android.R.id.text1);
             TextView timeView = view.findViewById(android.R.id.text2);
-            taskView.setText(taskName);
+            taskView.setText(taskItem.getTaskName());
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);
             taskView.setTextColor(txtColor);
             timeView.setTextColor(txtColor);
-            homeContext.startRunningTask(runnable);
         }
     }
 
@@ -231,8 +264,8 @@ public class HomeFragment extends Fragment {
     }
 
     private void switchTaskStateToIdle(int taskId) {
-        DatabaseHelper.getInstance(getContext()).updateTaskState(taskId, TaskItem.IDLE);
-        homeContext.stopRunningTask();
+        db.updateTaskState(taskId, TaskItem.IDLE);
+        homeContext.stopRunningTask(taskId);
         homeContext.clearTaskResource(taskId);
         notifyAdapters();
     }
@@ -249,16 +282,15 @@ public class HomeFragment extends Fragment {
         @Override
         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
             float timeAdded = hourOfDay + (float)minute / 60;
-            int id = taskItem.getId();
-            String name = taskItem.getTaskName();
+            int taskId = taskItem.getId();
             if (!taskItem.isIdle()) {
-                switchTaskStateToIdle(id);
+                switchTaskStateToIdle(taskId);
             }
             if (timeAdded > 0) {
-                DatabaseHelper.getInstance(getContext()).addTaskTime(id, timeAdded);
-                DatabaseHelper.getInstance(getContext()).appendTransaction(TimeUtils.getCurrentDateKey(), id, timeAdded);
+                db.addTaskTime(taskId, timeAdded);
+                db.appendTransaction(TimeUtils.getCurrentDateKey(), taskId, timeAdded);
             }
-            Toast.makeText(getContext(), name + " " + timeAdded, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, taskItem.getTaskName() + " " + timeAdded, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -302,8 +334,10 @@ public class HomeFragment extends Fragment {
             timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialogInterface) {
-                    switchTaskStateToIdle(taskItem.getId());
-                    Toast.makeText(getContext(), taskItem.getTaskName() + " is canceled", Toast.LENGTH_SHORT).show();
+                    if (!taskItem.isIdle()) {
+                        switchTaskStateToIdle(taskItem.getId());
+                    }
+                    Toast.makeText(context, taskItem.getTaskName() + " is canceled", Toast.LENGTH_SHORT).show();
                 }
             });
             timePickerDialog.setTitle(taskItem.getTaskName());

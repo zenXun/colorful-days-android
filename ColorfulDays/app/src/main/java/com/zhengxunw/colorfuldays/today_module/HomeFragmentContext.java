@@ -65,18 +65,9 @@ class HomeFragmentContext {
         taskToTime.remove(taskId);
     }
 
-    boolean hasBindedTextView(int taskId) {
-        return taskToView.containsKey(taskId);
-    }
-
-    void updateBindedTextView(int taskId, TextView tv) {
-        taskToView.put(taskId, tv);
-    }
-
-    void stopRunningTask() {
-        for (Map.Entry<Integer, Runnable> entry : taskToRunnable.entrySet()) {
-            int key = entry.getKey();
-            handler.removeCallbacks(entry.getValue());
+    void stopRunningTasks() {
+        for (Runnable runnable : taskToRunnable.values()) {
+            handler.removeCallbacks(runnable);
         }
         taskToRunnable.clear();
         taskToView.clear();
@@ -121,14 +112,6 @@ class HomeFragmentContext {
 
     void putTaskStartTime(int taskId, long startTime) {
         taskToTime.put(taskId, startTime);
-    }
-
-    void clearTaskToView() {
-        taskToTime.clear();
-    }
-
-    void clearRunningThreads() {
-        taskToRunnable.clear();
     }
 
 }

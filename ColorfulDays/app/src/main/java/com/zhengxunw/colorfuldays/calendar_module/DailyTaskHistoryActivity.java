@@ -35,10 +35,14 @@ import java.util.Set;
 public class DailyTaskHistoryActivity extends AppCompatActivity {
 
     String date;
+    private Context context;
+    private DatabaseHelper db;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getApplicationContext();
+        db = DatabaseHelper.getInstance(context);
 
         setContentView(R.layout.daily_task_history);
         ListView todayTasks = findViewById(R.id.today_tasks);
@@ -47,14 +51,14 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         dateTV.setText(date);
 
         ArrayList<TaskItem> tasks = new ArrayList<>();
-        Cursor transCursor = DatabaseHelper.getInstance(getApplicationContext()).queryTransactionGroupByTaskByDate(date);
+        Cursor transCursor = db.queryTransactionGroupByTaskByDate(date);
         transCursor.moveToFirst();
         do {
             if (transCursor.getCount() > 0) {
                 tasks.add(DatabaseHelper.getTaskItemFromTransJoinTaskTable(transCursor));
             }
         } while (transCursor.moveToNext());
-        todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
+        todayTasks.setAdapter(new todayTasksAdapter(context, tasks));
 
         Toolbar toolbar = findViewById(R.id.daily_activity_toolbar);
         setSupportActionBar(toolbar);
@@ -85,14 +89,14 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             TaskItem task = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.stats_item, parent, false);
+                convertView = LayoutInflater.from(context).inflate(R.layout.stats_item, parent, false);
             }
             // Lookup view for data population
             TextView taskTimesTV = convertView.findViewById(R.id.task_days_tv);
             TextView taskPartTV = (TextView) convertView.findViewById(R.id.task_name_part);
             TextView hourPartTV = (TextView) convertView.findViewById(R.id.task_hour_part);
 
-            Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionByDateAndTask(date, task.getId());
+            Cursor cursor = db.queryTransactionByDateAndTask(date, task.getId());
             cursor.moveToFirst();
             int times = cursor.getCount();
             cursor.close();

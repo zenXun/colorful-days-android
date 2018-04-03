@@ -38,6 +38,8 @@ public class CustomizedCalendarView extends LinearLayout {
 
     // current displayed month
     private Calendar currentDate = TimeUtils.getCurrentCalendar();
+    private Context context;
+    private DatabaseHelper db;
 
     // internal components
     private LinearLayout header;
@@ -76,6 +78,8 @@ public class CustomizedCalendarView extends LinearLayout {
      */
     private void initControl(Context context, AttributeSet attrs) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.context = context;
+        db = DatabaseHelper.getInstance(context);
         inflater.inflate(R.layout.control_calendar, this);
 
         assignUiElements();
@@ -117,6 +121,9 @@ public class CustomizedCalendarView extends LinearLayout {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Date date = (Date) adapterView.getItemAtPosition(position);
+                if (isCellOutsideCurrentMonth(date)) {
+                    return;
+                }
                 Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionByDate(TimeUtils.getDateKey(date));
                 cursor.moveToFirst();
                 if (cursor.getCount() > 0) {
@@ -136,7 +143,7 @@ public class CustomizedCalendarView extends LinearLayout {
     public void updateCalendar() {
 
         // update grid
-        grid.setAdapter(new CalendarAdapter(getContext(), getCalendarCells()));
+        grid.setAdapter(new CalendarAdapter(context, getCalendarCells()));
 
         // update title
         txtDate.setText(TimeUtils.DATE_FORMAT_CALENDAR_TITLE.format(currentDate.getTime()));
@@ -194,23 +201,15 @@ public class CustomizedCalendarView extends LinearLayout {
 
             // day in question
             Date date = getItem(position);
-            int day = date.getDate();
-            int month = date.getMonth();
-            int year = date.getYear();
-
-            // today
-            Date todayInThisMonth = currentDate.getTime();
-            Date todayDate = Calendar.getInstance().getTime();
-
-            if (month != todayInThisMonth.getMonth() || year != todayInThisMonth.getYear()) {
+            if (isCellOutsideCurrentMonth(date)) {
                 // if this day is outside current month, grey it out
                 ((TextView)view).setTextColor(getResources().getColor(R.color.greyed_out));
             } else {
                 // if it is today, set it to blue/bold
-                int bgColor = generateDayColor(date);
-                if (day == todayDate.getDate() && month == todayDate.getMonth() && year == todayDate.getYear()) {
+                if (isCellToday(date)) {
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
                 }
+                int bgColor = generateDayColor(date);
                 ((TextView) view).setTextColor(CustomizedColorUtils.getTextColor(bgColor));
                 view.setBackgroundColor(bgColor);
             }
@@ -219,5 +218,22 @@ public class CustomizedCalendarView extends LinearLayout {
 
             return view;
         }
+    }
+
+    private boolean isCellToday(Date cellDate) {
+        int day = cellDate.getDate();
+        int month = cellDate.getMonth();
+        int year = cellDate.getYear();
+        Date todayDate = Calendar.getInstance().getTime();
+        return (day == todayDate.getDate() && month == todayDate.getMonth() && year == todayDate.getYear());
+    }
+
+    private boolean isCellOutsideCurrentMonth(Date cellDate) {
+        int month = cellDate.getMonth();
+        int year = cellDate.getYear();
+
+        // today
+        Date todayInThisMonth = currentDate.getTime();
+        return (month != todayInThisMonth.getMonth()) || (year != todayInThisMonth.getYear());
     }
 }

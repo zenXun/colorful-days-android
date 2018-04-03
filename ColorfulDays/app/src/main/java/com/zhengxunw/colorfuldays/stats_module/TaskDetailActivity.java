@@ -46,6 +46,8 @@ public class TaskDetailActivity extends AppCompatActivity {
     private ColorPicker cp;
     private BarChart barChart;
     private boolean isNewTask = false;
+    private Context context;
+    private DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,8 @@ public class TaskDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        context = getApplicationContext();
+        db = DatabaseHelper.getInstance(getApplicationContext());
         cp = new ColorPicker(TaskDetailActivity.this);
         mEditTaskName = findViewById(R.id.edit_task_name);
         mEditTaskInitHour = findViewById(R.id.edit_task_init_hour);
@@ -68,9 +72,7 @@ public class TaskDetailActivity extends AppCompatActivity {
             barChart.setVisibility(View.INVISIBLE);
             deleteTaskBtn.setClickable(false);
             taskItem = new TaskItem();
-        }
-
-        if (!isNewTask) {
+        } else {
             existingTaskSetup();
         }
 
@@ -93,8 +95,8 @@ public class TaskDetailActivity extends AppCompatActivity {
             }
         });
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void existingTaskSetup() {
@@ -103,13 +105,13 @@ public class TaskDetailActivity extends AppCompatActivity {
 
         List<BarEntry> entries = new ArrayList<>();
         String[] labels = new String[7];
-        int taskId = taskItem.getId();
+        final int taskId = taskItem.getId();
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_WEEK, -6);
 
         for (int i = 0; i < 7; i++) {
             String dateKey = TimeUtils.getDateKey(cal.getTime());
-            Cursor cursor = DatabaseHelper.getInstance(getApplicationContext()).queryHourByDateAndTask(dateKey, taskId);
+            Cursor cursor = db.queryHourByDateAndTask(dateKey, taskId);
             cursor.moveToFirst();
             labels[i] = TimeUtils.getWeekday(cal);
             if (cursor.getCount() > 0) {
@@ -133,8 +135,8 @@ public class TaskDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
-                DatabaseHelper.getInstance(getApplicationContext()).removeTask(taskItem.getId());
-                DatabaseHelper.getInstance(getApplicationContext()).removeTaskTransactions(taskItem.getId());
+                db.removeTask(taskId);
+                db.removeTaskTransactions(taskId);
                 onBackPressed();
             }
         });
@@ -181,8 +183,6 @@ public class TaskDetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_task_action:
-                Context context = getApplicationContext();
-                DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
                 String newTaskName = mEditTaskName.getText().toString();
                 String newTaskHourText = mEditTaskInitHour.getText().toString();
                 float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
@@ -195,7 +195,7 @@ public class TaskDetailActivity extends AppCompatActivity {
                 }
 
                 if (newTaskName.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), R.string.empty_task_name_msg, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.empty_task_name_msg, Toast.LENGTH_SHORT).show();
                     return false;
                 }
 
