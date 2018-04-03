@@ -98,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
         mPagerAdapter = new ScreenSlidePagerAdapter(fragmentManager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageTransformer(true, new ZoomOutPageTransformer());
-        mPager.setOffscreenPageLimit(0);
         mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             @Override
@@ -119,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
                         bottomNavigationView.getMenu().getItem(2).setChecked(true);
                         break;
                 }
+                mPager.setCurrentItem(position);
             }
 
             @Override
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 case 2:
                     return calendarFrag;
             }
-            return homeFrag;
+            return null;
         }
 
         @Override
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemPosition(Object object) {
+        public int getItemPosition(Object obj) {
             return POSITION_NONE;
         }
     }

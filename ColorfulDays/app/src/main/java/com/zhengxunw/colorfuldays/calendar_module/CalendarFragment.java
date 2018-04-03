@@ -7,9 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zhengxunw.colorfuldays.R;
+import com.zhengxunw.colorfuldays.Updatable;
 
 
-public class CalendarFragment extends Fragment {
+public class CalendarFragment extends Fragment{
 
     private CustomizedCalendarView cv;
 
@@ -44,5 +45,10 @@ public class CalendarFragment extends Fragment {
     public void onStart() {
         super.onStart();
         cv.updateCalendar();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 }

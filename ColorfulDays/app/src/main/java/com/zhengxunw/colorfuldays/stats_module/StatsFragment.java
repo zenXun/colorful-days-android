@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.zhengxunw.colorfuldays.R;
+import com.zhengxunw.colorfuldays.Updatable;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
@@ -46,6 +47,14 @@ public class StatsFragment extends Fragment {
     }
 
     @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            notifyAdapters();
+        }
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
@@ -72,13 +81,17 @@ public class StatsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        notifyAdapters();
+    }
+
+    private void notifyAdapters() {
         allTaskListAdapter.changeCursor(db.getTaskByState(TaskItem.ALL));
+        allTaskListAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        allTaskListAdapter.notifyDataSetChanged();
     }
 
     @Override
