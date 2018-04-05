@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.zhengxunw.colorfuldays.stats_module.TaskDetailActivity">
+    tools:context="com.zhengxunw.colorfuldays.commons.TaskDetailActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

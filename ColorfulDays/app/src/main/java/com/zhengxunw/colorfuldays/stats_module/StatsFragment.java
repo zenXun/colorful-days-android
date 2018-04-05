@@ -3,7 +3,6 @@ package com.zhengxunw.colorfuldays.stats_module;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,8 +13,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.Updatable;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
+import com.zhengxunw.colorfuldays.commons.TaskDetailActivity;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;

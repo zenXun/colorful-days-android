@@ -1,7 +1,6 @@
-package com.zhengxunw.colorfuldays.stats_module;
+package com.zhengxunw.colorfuldays.commons;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -21,16 +20,11 @@ import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
-import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
-import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
-import com.zhengxunw.colorfuldays.MainActivity;
+import com.r0adkll.slidr.Slidr;
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
-import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
@@ -55,6 +49,7 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Slidr.attach(this, Constants.slidrConfig);
 
         setContentView(R.layout.activity_task_detail);
         Toolbar toolbar = findViewById(R.id.toolbar);

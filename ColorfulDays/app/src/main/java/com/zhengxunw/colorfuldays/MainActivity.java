@@ -1,14 +1,12 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -17,15 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
-import com.zhengxunw.colorfuldays.commons.TimeUtils;
-import com.zhengxunw.colorfuldays.database.TaskItem;
-import com.zhengxunw.colorfuldays.stats_module.TaskDetailActivity;
-import com.zhengxunw.colorfuldays.database.DatabaseConstants;
-import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+import com.zhengxunw.colorfuldays.commons.TaskDetailActivity;
 import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
 import com.zhengxunw.colorfuldays.today_module.HomeFragment;
-
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     /**
