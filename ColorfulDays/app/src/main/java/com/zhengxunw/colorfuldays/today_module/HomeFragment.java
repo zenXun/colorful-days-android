@@ -9,7 +9,6 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -21,7 +20,6 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.Updatable;
 import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
@@ -94,7 +92,7 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.home_fragment, container, false);
 
         homeContext = new HomeFragmentContext(getActivity(), getContext());
         ListView idleTaskList = view.findViewById(R.id.idle_task_list);

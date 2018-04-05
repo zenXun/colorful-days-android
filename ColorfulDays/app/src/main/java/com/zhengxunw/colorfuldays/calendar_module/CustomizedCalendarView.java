@@ -81,7 +81,7 @@ public class CustomizedCalendarView extends LinearLayout {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.context = context;
         db = DatabaseHelper.getInstance(context);
-        inflater.inflate(R.layout.control_calendar, this);
+        inflater.inflate(R.layout.calendar_grid, this);
 
         assignUiElements();
         assignClickHandlers();

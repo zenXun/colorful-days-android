@@ -64,7 +64,7 @@ public class StatsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_stats, container, false);
+        View view = inflater.inflate(R.layout.stats_fragment, container, false);
         ListView allTaskList = view.findViewById(R.id.all_task_list);
         allTaskListAdapter = new AllTaskCursorAdapter(context, db.getTaskByState(TaskItem.ALL));
         allTaskList.setAdapter(allTaskListAdapter);

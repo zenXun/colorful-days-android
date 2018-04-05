@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.Updatable;
 
 
 public class CalendarFragment extends Fragment{
@@ -35,7 +34,7 @@ public class CalendarFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_color, container, false);
+        View view = inflater.inflate(R.layout.calendar_fragment, container, false);
 
         cv = view.findViewById(R.id.calendar_view);
         return view;

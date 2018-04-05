@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private PagerAdapter mPagerAdapter;
 
-    private FragmentManager fragmentManager;
     private Fragment homeFrag, statsFrag, calendarFrag;
     private BottomNavigationView bottomNavigationView;
 
@@ -47,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = findViewById(R.id.content);
-        fragmentManager = getSupportFragmentManager();
         homeFrag = HomeFragment.newInstance();
         statsFrag = StatsFragment.newInstance();
         calendarFrag = CalendarFragment.newInstance();
@@ -87,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 //        c.set(2018, 2, 21, 0, 0);
 //        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 2);
 
-        mPagerAdapter = new ScreenSlidePagerAdapter(fragmentManager);
+        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageTransformer(true, new ZoomOutPageTransformer());
         mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {

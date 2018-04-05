@@ -2,7 +2,6 @@ package com.zhengxunw.colorfuldays.calendar_module;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -44,7 +43,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         context = getApplicationContext();
         db = DatabaseHelper.getInstance(context);
 
-        setContentView(R.layout.daily_task_history);
+        setContentView(R.layout.calendar_daily_task_history);
         ListView todayTasks = findViewById(R.id.today_tasks);
         date = getIntent().getStringExtra(CustomizedCalendarView.DAILY_TASK_INTENT_EXTRA_KEY);
         TextView dateTV = findViewById(R.id.date_tv);
