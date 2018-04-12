@@ -2,7 +2,6 @@ package com.zhengxunw.colorfuldays.today_module;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -27,17 +26,24 @@ import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.Date;
+import java.util.Locale;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 import static android.content.ContentValues.TAG;
 
 public class HomeFragment extends Fragment {
 
-    private TextView mTextDate;
+    @BindView(R.id.today_date) TextView todayDateTV;
+    private Unbinder unbinder;
     private IdleTaskCursorAdapter idleListAdapter;
     private WorkingTaskCursorAdapter workingListAdapter;
     private HomeFragmentContext homeContext;
     private Context context;
     private DatabaseHelper db;
+    private Locale locale = Locale.US;
 
     private View.OnDragListener taskDropListener = new View.OnDragListener() {
 
@@ -92,12 +98,11 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.home_fragment, container, false);
-
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        unbinder = ButterKnife.bind(this, view);
         homeContext = new HomeFragmentContext(getActivity(), getContext());
         ListView idleTaskList = view.findViewById(R.id.idle_task_list);
         ListView workingTaskList = view.findViewById(R.id.working_task_list);
-        mTextDate = view.findViewById(R.id.today_date);
 
         workingTaskList.setTag(Constants.WORKING_TASK_TAG);
         workingTaskList.setOnDragListener(taskDropListener);
@@ -112,6 +117,12 @@ public class HomeFragment extends Fragment {
         displayCurrentDate();
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
     }
 
     @Override
@@ -151,9 +162,13 @@ public class HomeFragment extends Fragment {
         workingListAdapter.notifyDataSetChanged();
     }
 
+    private void toastMsg(String msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+    }
+
     private void displayCurrentDate() {
         Date currentTime = TimeUtils.getTodayDate();
-        mTextDate.setText(TimeUtils.DATE_FORMAT_HOME.format(currentTime));
+        todayDateTV.setText(TimeUtils.DATE_FORMAT_HOME.format(currentTime));
     }
 
     public class IdleTaskCursorAdapter extends android.widget.CursorAdapter {
@@ -246,23 +261,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    class idleTaskOnClickListener implements View.OnClickListener {
-
-        TaskItem taskItem;
-
-        idleTaskOnClickListener(TaskItem taskItem) {
-            this.taskItem = taskItem;
-        }
-
-        @Override
-        public void onClick(View view) {
-            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
-                    new taskOnTimeSetListener(taskItem), 0, 0, true);
-            timePickerDialog.setTitle(taskItem.getTaskName());
-            timePickerDialog.show();
-        }
-    }
-
     private void switchTaskStateToIdle(int taskId) {
         db.updateTaskState(taskId, TaskItem.IDLE);
         homeContext.stopRunningTask(taskId);
@@ -290,7 +288,7 @@ public class HomeFragment extends Fragment {
                 db.addTaskTime(taskId, timeAdded);
                 db.appendTransaction(TimeUtils.getCurrentDateKey(), taskId, timeAdded);
             }
-            Toast.makeText(context, taskItem.getTaskName() + " " + timeAdded, Toast.LENGTH_SHORT).show();
+            toastMsg(taskItem.getTaskName() + " " + String.format(locale, "%.02f", timeAdded) + " hours");
         }
     }
 
@@ -319,6 +317,23 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    class idleTaskOnClickListener implements View.OnClickListener {
+
+        TaskItem taskItem;
+
+        idleTaskOnClickListener(TaskItem taskItem) {
+            this.taskItem = taskItem;
+        }
+
+        @Override
+        public void onClick(View view) {
+            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
+                    new taskOnTimeSetListener(taskItem), 0, 0, true);
+            timePickerDialog.setTitle(taskItem.getTaskName());
+            timePickerDialog.show();
+        }
+    }
+
     class workingTaskOnClickListener implements View.OnClickListener {
 
         TaskItem taskItem;
@@ -331,15 +346,6 @@ public class HomeFragment extends Fragment {
             float timeAdded = TimeUtils.millisToHour(System.currentTimeMillis() - homeContext.getTaskStartTime(taskItem.getId()));
             TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
                     new taskOnTimeSetListener(taskItem), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
-            timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialogInterface) {
-                    if (!taskItem.isIdle()) {
-                        switchTaskStateToIdle(taskItem.getId());
-                    }
-                    Toast.makeText(context, taskItem.getTaskName() + " is canceled", Toast.LENGTH_SHORT).show();
-                }
-            });
             timePickerDialog.setTitle(taskItem.getTaskName());
             timePickerDialog.show();
         }

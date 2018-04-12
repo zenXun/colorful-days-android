@@ -4,6 +4,7 @@
     <string name="title_stats">Stats</string>
     <string name="title_colors">Colors</string>
     <string name="title_add_task">Add Task</string>
+    <string name="title_task_setting">Task Setting</string>
     <string name="add_task_success">New task was added successfully.</string>
     <string name="add_task_failure">New task failed to be added.</string>
     <string name="task_name_tv_hint">Task Name:</string>

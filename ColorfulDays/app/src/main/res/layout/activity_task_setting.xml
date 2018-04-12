@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/background_material_light"
-    tools:context="com.zhengxunw.colorfuldays.commons.TaskDetailActivity">
+    tools:context="com.zhengxunw.colorfuldays.commons.TaskSettingActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -70,43 +70,25 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/color_setting"
+        android:id="@+id/btn_color_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Color Setting" />
 
     <RelativeLayout
+        android:id="@+id/graphs_and_delete_btn"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.design.widget.TabLayout
-            android:layout_width="match_parent"
+        <include
+            layout="@layout/stats_graphs_with_tabs"
             android:layout_height="match_parent"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:layout_above="@id/delete_task">
-
-            <android.support.design.widget.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Left" />
-
-            <android.support.design.widget.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Center" />
-
-            <android.support.design.widget.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Right" />
-        </android.support.design.widget.TabLayout>
+            android:layout_width="match_parent"
+            android:layout_above="@+id/btn_delete_task"/>
 
         <Button
             android:layout_alignParentBottom="true"
-            android:id="@+id/delete_task"
+            android:id="@+id/btn_delete_task"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#FF0000"

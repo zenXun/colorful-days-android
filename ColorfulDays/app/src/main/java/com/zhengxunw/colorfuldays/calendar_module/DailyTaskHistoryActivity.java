@@ -14,8 +14,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.r0adkll.slidr.Slidr;
-import com.r0adkll.slidr.model.SlidrConfig;
-import com.r0adkll.slidr.model.SlidrPosition;
 import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
@@ -43,7 +41,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         context = getApplicationContext();
         db = DatabaseHelper.getInstance(context);
 
-        setContentView(R.layout.calendar_daily_task_history);
+        setContentView(R.layout.activity_task_daily_history);
         ListView todayTasks = findViewById(R.id.today_tasks);
         date = getIntent().getStringExtra(CustomizedCalendarView.DAILY_TASK_INTENT_EXTRA_KEY);
         TextView dateTV = findViewById(R.id.date_tv);
@@ -88,7 +86,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             TaskItem task = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.stats_item, parent, false);
+                convertView = LayoutInflater.from(context).inflate(R.layout.stats_task_row, parent, false);
             }
             // Lookup view for data population
             TextView taskTimesTV = convertView.findViewById(R.id.task_days_tv);

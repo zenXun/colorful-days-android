@@ -15,7 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
-import com.zhengxunw.colorfuldays.commons.TaskDetailActivity;
+import com.zhengxunw.colorfuldays.commons.TaskSettingActivity;
 import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
 import com.zhengxunw.colorfuldays.today_module.HomeFragment;
 
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.option_add_task, menu);
+        getMenuInflater().inflate(R.menu.task_addition, menu);
         return true;
     }
 
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_task:
-                Intent intent = new Intent(MainActivity.this, TaskDetailActivity.class);
+                Intent intent = new Intent(MainActivity.this, TaskSettingActivity.class);
                 startActivity(intent);
                 return true;
         }
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
-        private static final float MIN_SCALE = 0.85f;
+        private static final float MIN_SCALE = 1f;
         private static final float MIN_ALPHA = 0.5f;
 
         public void transformPage(View view, float position) {

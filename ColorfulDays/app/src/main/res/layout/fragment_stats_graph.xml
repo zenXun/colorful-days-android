@@ -11,6 +11,6 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_above="@id/delete_task"/>
+        android:layout_above="@id/btn_delete_task"/>
 
 </android.support.constraint.ConstraintLayout>

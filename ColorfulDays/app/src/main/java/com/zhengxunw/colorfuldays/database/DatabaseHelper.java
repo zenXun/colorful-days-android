@@ -7,8 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 
+import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -192,12 +195,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(DatabaseConstants.getFirstTransactionSQL(taskId), null);
         cursor.moveToFirst();
         int idx = cursor.getColumnIndex(DatabaseConstants.TRANSACTION_TABLE_DATE);
-        if (cursor.getCount() == 0 || idx < 0) {
-            return null;
+        String ret = null;
+        if (cursor.getCount() != 0 && idx >= 0) {
+            ret = cursor.getString(idx);
         }
-        String date = cursor.getString(idx);
         cursor.close();
-        return date;
+        return ret;
+    }
+
+    public int getUniqueTransactionsDays(int taskId) {
+        Cursor uniqueDatesCursor = queryUniqueTransactionsDate(taskId);
+        uniqueDatesCursor.moveToFirst();
+        int days = uniqueDatesCursor.getCount();
+        uniqueDatesCursor.close();
+        return days;
     }
 
     public Cursor getTaskById(int taskId) {
@@ -238,8 +249,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(sql, null);
     }
 
-    public Cursor queryHourByDateAndTask(String date, int id) {
-        return db.rawQuery(DatabaseConstants.getHoursByDateAndTaskSQL(date, id), null);
+    public Cursor queryHourByGraphType(int graphType, int id, Calendar cal) {
+        switch (graphType) {
+            case Constants.DAILY_GRAPH:
+                return queryHourByDate(TimeUtils.getDateKey(cal.getTime()), id);
+            case Constants.WEEKLY_GRAPH:
+                return null;
+            case Constants.MONTHLY_GRAPH:
+                return null;
+            default:
+                break;
+        }
+        return null;
+    }
+
+//    private Cursor queryHourByWeek(Calendar calendar, int id) {
+//        return db.rawQuery(DatabaseConstants.getHoursByWeekSQL());
+//    }
+
+    private Cursor queryHourByDate(String date, int id) {
+        return db.rawQuery(DatabaseConstants.getHoursByDateSQL(date, id), null);
     }
 
     /**

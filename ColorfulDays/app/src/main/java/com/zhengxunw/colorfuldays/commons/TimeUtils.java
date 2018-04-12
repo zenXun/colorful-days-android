@@ -24,6 +24,13 @@ public class TimeUtils {
         return weekdayFormat.format(calendar.getTime());
     }
 
+    public static String getLabel(Calendar calendar, int graphType) {
+        if (graphType == Constants.DAILY_GRAPH) {
+            return getWeekday(calendar);
+        }
+        return null;
+    }
+
     public static Date getTodayDate() {
         return Calendar.getInstance(Locale.US).getTime();
     }

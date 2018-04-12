@@ -102,9 +102,18 @@ public class DatabaseConstants {
         return builder.toString();
     }
 
-    static String getHoursByDateAndTaskSQL(String date, int taskId) {
+    static String getHoursByDateSQL(String date, int taskId) {
         return String.format("SELECT SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
                 TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
+    }
+
+    static String getHoursByWeekSQL(int month, int taskId) {
+        return String.format("SELECT strftime('%%m', %s) AS %s FROM %s WHERE strftime('%%m', %s)='%s' AND %s='%s' GROUP BY %s",
+                TASK_TABLE_TASK_HOUR, TASK_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_TASK_HOUR, getMonthFormat(month), TASK_TABLE_TASK_ID, taskId, TRANSACTION_TABLE_TASK_HOUR);
+    }
+
+    private static String getMonthFormat(int month) {
+        return String.valueOf(month);
     }
 
 }

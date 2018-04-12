@@ -1,7 +1,6 @@
 package com.zhengxunw.colorfuldays.commons;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,13 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Description;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.r0adkll.slidr.Slidr;
@@ -28,20 +20,20 @@ import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
 
-public class TaskDetailActivity extends AppCompatActivity implements ColorPickerDialogListener {
+public class TaskSettingActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
-    private EditText mEditTaskName;
-    private EditText mEditTaskInitHour;
-    private Button colorSettingBtn;
-    private Button deleteTaskBtn;
+    @BindView(R.id.edit_task_name) EditText mEditTaskName;
+    @BindView(R.id.edit_task_init_hour) EditText mEditTaskInitHour;
+    @BindView(R.id.btn_color_setting) Button colorSettingBtn;
+    @BindView(R.id.btn_delete_task) Button deleteTaskBtn;
+
+    @BindView(R.id.toolbar) Toolbar toolbar;
     private TaskItem taskItem;
-    private BarChart barChart;
     private boolean isNewTask = false;
     private Context context;
     private DatabaseHelper db;
@@ -49,26 +41,16 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_task_setting);
+        ButterKnife.bind(this);
         Slidr.attach(this, Constants.slidrConfig);
-
-        setContentView(R.layout.activity_task_detail);
-        Toolbar toolbar = findViewById(R.id.toolbar);
         context = getApplicationContext();
         db = DatabaseHelper.getInstance(getApplicationContext());
-        mEditTaskName = findViewById(R.id.edit_task_name);
-        mEditTaskInitHour = findViewById(R.id.edit_task_init_hour);
-        colorSettingBtn = findViewById(R.id.color_setting);
-        deleteTaskBtn = findViewById(R.id.delete_task);
-        barChart = findViewById(R.id.chart);
 
         taskItem = getIntent().getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
-        
+
         if (taskItem == null) {
-            isNewTask = true;
-            deleteTaskBtn.setVisibility(View.INVISIBLE);
-            barChart.setVisibility(View.INVISIBLE);
-            deleteTaskBtn.setClickable(false);
-            taskItem = new TaskItem();
+            newTaskSetup();
         } else {
             existingTaskSetup();
         }
@@ -85,7 +67,7 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
                         .setAllowCustom(true)
                         .setAllowPresets(false)
                         .setColor(Color.BLACK)
-                        .show(TaskDetailActivity.this);
+                        .show(TaskSettingActivity.this);
             }
         });
         setSupportActionBar(toolbar);
@@ -93,38 +75,18 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    private void newTaskSetup() {
+        isNewTask = true;
+        deleteTaskBtn.setVisibility(View.INVISIBLE);
+        deleteTaskBtn.setClickable(false);
+        taskItem = new TaskItem();
+    }
+
     private void existingTaskSetup() {
         TextView hourTV = findViewById(R.id.task_hour_tv);
         hourTV.setText(R.string.existing_task_hour_tv_hint);
 
-        List<BarEntry> entries = new ArrayList<>();
-        String[] labels = new String[7];
         final int taskId = taskItem.getId();
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_WEEK, -6);
-
-        for (int i = 0; i < 7; i++) {
-            String dateKey = TimeUtils.getDateKey(cal.getTime());
-            Cursor cursor = db.queryHourByDateAndTask(dateKey, taskId);
-            cursor.moveToFirst();
-            labels[i] = TimeUtils.getWeekday(cal);
-            if (cursor.getCount() > 0) {
-                float time = DatabaseHelper.getHourInTransTable(cursor);
-                entries.add(new BarEntry(i, time));
-            } else {
-                entries.add(new BarEntry(i, 0));
-            }
-            cal.add(Calendar.DAY_OF_WEEK, 1);
-        }
-
-        BarDataSet barDataSet = new BarDataSet(entries, "time spent (in hour)");
-        BarData barData = new BarData(barDataSet);
-        barChart.getXAxis().setValueFormatter(new LabelFormatter(labels));
-        barChart.setData(barData);
-        Description description = new Description();
-        description.setText("The most recent week's record.");
-        barChart.setDescription(description);
-
         deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -134,19 +96,6 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
                 onBackPressed();
             }
         });
-    }
-
-    private class LabelFormatter implements IAxisValueFormatter {
-        private final String[] mLabels;
-
-        public LabelFormatter(String[] labels) {
-            mLabels = labels;
-        }
-
-        @Override
-        public String getFormattedValue(float value, AxisBase axis) {
-            return mLabels[(int) value];
-        }
     }
 
     @Override
@@ -161,7 +110,7 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.action_add_task, menu);
+        getMenuInflater().inflate(R.menu.task_setting_done, menu);
         return true;
     }
 
@@ -214,5 +163,7 @@ public class TaskDetailActivity extends AppCompatActivity implements ColorPicker
         colorSettingBtn.setBackgroundColor(color);
         colorSettingBtn.setTextColor(CustomizedColorUtils.getTextColor(color));
     }
+
+
 
 }

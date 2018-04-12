@@ -19,14 +19,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".commons.TaskDetailActivity"
+            android:name=".commons.TaskSettingActivity"
             android:label="@string/title_activity_task_detail"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".calendar_module.DailyTaskHistoryActivity"
             android:label="@string/daily_task_history_activity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".stats_module.ColorPickerActivity"></activity>
+        <activity android:name=".stats_module.ColorPickerActivity"/>
+        <activity
+            android:name=".stats_module.TaskStatsActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
