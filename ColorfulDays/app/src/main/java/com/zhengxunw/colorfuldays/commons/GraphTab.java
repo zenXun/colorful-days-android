@@ -16,6 +16,7 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.zhengxunw.colorfuldays.R;
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public class GraphTab extends Fragment {
             cursor.moveToFirst();
             labels[i] = TimeUtils.getLabel(cal, graphType);
             if (cursor.getCount() > 0) {
-                float time = DatabaseHelper.getHourInTransTable(cursor);
+                float time = (Float) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR);
                 entries.add(new BarEntry(i, time));
             } else {
                 entries.add(new BarEntry(i, 0));

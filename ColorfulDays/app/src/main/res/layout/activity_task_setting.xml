@@ -69,6 +69,46 @@
             android:inputType="numberDecimal"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/task_goal_tv"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="@string/task_goal_tv_hint"
+            android:gravity="center_vertical"
+            android:textAlignment="center"
+            android:layout_weight="1"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_weight="3">
+
+
+            <EditText
+                android:id="@+id/task_goal_ev"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/task_hour_tv_eg"
+                android:layout_weight="1"
+                android:inputType="numberDecimal"/>
+
+            <Spinner
+                android:id="@+id/goal_frequency"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+            </Spinner>
+
+        </LinearLayout>
+    </LinearLayout>
+
     <Button
         android:id="@+id/btn_color_setting"
         android:layout_width="match_parent"

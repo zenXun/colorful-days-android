@@ -4,6 +4,11 @@ import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.zhengxunw.colorfuldays.commons.Constants;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by zhengxunw on 3/16/18.
  */
@@ -20,6 +25,12 @@ public class TaskItem implements Parcelable {
     private float taskHour;
     private int state;
     private int color;
+    private float goal;
+    private float goalType;
+
+    public TaskItem() {
+
+    }
 
     public TaskItem(int id, String taskName, float taskHour, int color, int state) {
         this.id = id;
@@ -37,10 +48,6 @@ public class TaskItem implements Parcelable {
     @Override
     public boolean equals(Object obj) {
         return id == ((TaskItem) obj).getId();
-    }
-
-    public TaskItem() {
-
     }
 
     public String getTaskName() {
@@ -98,6 +105,7 @@ public class TaskItem implements Parcelable {
         taskHour = in.readFloat();
         state = in.readInt();
         color = in.readInt();
+        goal = in.readFloat();
     }
 
     @Override
@@ -112,6 +120,7 @@ public class TaskItem implements Parcelable {
         dest.writeFloat(taskHour);
         dest.writeInt(state);
         dest.writeInt(color);
+        dest.writeFloat(goal);
     }
 
     @SuppressWarnings("unused")

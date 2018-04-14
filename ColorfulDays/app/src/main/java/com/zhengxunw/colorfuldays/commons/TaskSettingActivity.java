@@ -8,8 +8,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +33,7 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
     @BindView(R.id.edit_task_init_hour) EditText mEditTaskInitHour;
     @BindView(R.id.btn_color_setting) Button colorSettingBtn;
     @BindView(R.id.btn_delete_task) Button deleteTaskBtn;
-
+    @BindView(R.id.goal_frequency) Spinner goalFreqSpinner;
     @BindView(R.id.toolbar) Toolbar toolbar;
     private TaskItem taskItem;
     private boolean isNewTask = false;
@@ -49,15 +51,19 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
 
         taskItem = getIntent().getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
 
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.goal_frequency, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        goalFreqSpinner.setAdapter(adapter);
+
         if (taskItem == null) {
             newTaskSetup();
         } else {
             existingTaskSetup();
         }
-
-        mEditTaskName.setText(isNewTask ? "" : taskItem.getTaskName());
-        mEditTaskInitHour.setText(String.valueOf(isNewTask ? 0f : taskItem.getTaskHour()));
-        colorSettingBtn.setBackgroundColor(isNewTask ? Color.WHITE : taskItem.getColor());
 
         colorSettingBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,19 +86,26 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
         deleteTaskBtn.setVisibility(View.INVISIBLE);
         deleteTaskBtn.setClickable(false);
         taskItem = new TaskItem();
+
+        mEditTaskName.setText("");
+        mEditTaskInitHour.setText("0");
+        colorSettingBtn.setBackgroundColor(Color.WHITE);
     }
 
     private void existingTaskSetup() {
         TextView hourTV = findViewById(R.id.task_hour_tv);
         hourTV.setText(R.string.existing_task_hour_tv_hint);
 
+        mEditTaskName.setText(taskItem.getTaskName());
+        mEditTaskInitHour.setText(String.valueOf(taskItem.getTaskHour()));
+        colorSettingBtn.setBackgroundColor(taskItem.getColor());
+
         final int taskId = taskItem.getId();
         deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
-                db.removeTask(taskId);
-                db.removeTaskTransactions(taskId);
+                db.deleteTask(taskId);
                 onBackPressed();
             }
         });
@@ -128,16 +141,16 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
                 String newTaskHourText = mEditTaskInitHour.getText().toString();
                 float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
 
+                if (newTaskName.isEmpty()) {
+                    Toast.makeText(context, R.string.empty_task_name_msg, Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
                 if (!isNewTask) {
                     taskItem.setTaskName(newTaskName);
                     taskItem.setTaskHour(newTaskHour);
                     db.updateTask(taskItem);
                     break;
-                }
-
-                if (newTaskName.isEmpty()) {
-                    Toast.makeText(context, R.string.empty_task_name_msg, Toast.LENGTH_SHORT).show();
-                    return false;
                 }
 
                 TaskItem newTask = new TaskItem(taskItem.getId(), newTaskName, newTaskHour, taskItem.getColor(), TaskItem.IDLE);

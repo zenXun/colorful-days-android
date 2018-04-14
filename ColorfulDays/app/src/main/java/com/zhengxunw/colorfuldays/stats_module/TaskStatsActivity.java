@@ -102,6 +102,9 @@ public class TaskStatsActivity extends AppCompatActivity {
         if (cursor.getCount() == 0) {
             onBackPressed();
         }
+        cursor.moveToFirst();
+        taskItem = DatabaseHelper.getTaskItem(cursor);
+        StatsUtils.populateStatsRow(DatabaseHelper.getInstance(getApplicationContext()), taskItem, findViewById(R.id.task_info_row));
     }
 
     @Override

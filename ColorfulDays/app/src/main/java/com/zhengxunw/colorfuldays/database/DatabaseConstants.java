@@ -7,21 +7,22 @@ package com.zhengxunw.colorfuldays.database;
 public class DatabaseConstants {
 
     public static final String DATABASE_NAME = "mytask.db";
-    static final String TASK_TABLE_NAME = "mytask_table";
-    static final String TASK_TABLE_TASK_ID = "task_id";
-    static final String TASK_TABLE_TASK_NAME = "task_name";
-    static final String TASK_TABLE_TASK_HOUR = "task_total_hour";
-    static final String TASK_TABLE_IS_IDLE = "task_state";
-    static final String TASK_TABLE_COLOR = "task_color";
+    public static final String TASK_TABLE_NAME = "mytask_table";
+    public static final String TASK_TABLE_TASK_ID = "task_id";
+    public static final String TASK_TABLE_TASK_NAME = "task_name";
+    public static final String TASK_TABLE_TASK_HOUR = "task_total_hour";
+    public static final String TASK_TABLE_IS_IDLE = "task_state";
+    public static final String TASK_TABLE_COLOR = "task_color";
 
-    static final String TRANSACTION_TABLE_NAME = "transaction_table";
-    static final String TRANSACTION_TABLE_ID = "transaction_id";
-    static final String TRANSACTION_TABLE_DATE = "transaction_task_date";
-    static final String TRANSACTION_TABLE_TASK_HOUR = "transaction_task_hour";
+    public static final String TRANSACTION_TABLE_NAME = "transaction_table";
+    public static final String TRANSACTION_TABLE_ID = "transaction_id";
+    public static final String TRANSACTION_TABLE_DATE = "transaction_task_date";
+    public static final String TRANSACTION_TABLE_TASK_HOUR = "transaction_task_hour";
+    public static final String TRANSACTION_TABLE_NOTE = "transaction_note";
 
-    static final String CALENDAR_TABLE_NAME = "calendar_table";
-    static final String CALENDAR_TABLE_DATE = "calendar_date";
-    static final String CALENDAR_TABLE_COLOR = "color_code";
+    public static final String CALENDAR_TABLE_NAME = "calendar_table";
+    public static final String CALENDAR_TABLE_DATE = "calendar_date";
+    public static final String CALENDAR_TABLE_COLOR = "color_code";
 
 
     static String getTaskTableCreationSQL() {
@@ -39,20 +40,12 @@ public class DatabaseConstants {
         return String.format(template, CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE, CALENDAR_TABLE_COLOR);
     }
 
-    static String getColorOfTaskIdSQL(int taskId) {
-        return String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TASK_TABLE_NAME, TASK_TABLE_TASK_ID, taskId);
-    }
-
-    static String getColorOfDate(String date) {
-        return String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE, date);
-    }
-
     static String getLastCalendarEntrySQL() {
         return String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE);
     }
 
     static String getFirstTransactionSQL(int taskID) {
-        return String.format("SELECT * FROM %s WHERE %s='%s' ORDER BY %s ASC LIMIT 1;", TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskID, TRANSACTION_TABLE_DATE);
+        return String.format("SELECT rowid _id, * FROM %s WHERE %s='%s' ORDER BY %s ASC LIMIT 1;", TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskID, TRANSACTION_TABLE_DATE);
     }
 
     static String getLastTransactionSQL() {
@@ -61,15 +54,20 @@ public class DatabaseConstants {
 
     static String getTransactionsGroupByTaskOnDateSQL(String date) {
         return String.format("SELECT t.%s AS %s, SUM(t.%s) AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s ",
-                TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE, TASK_TABLE_IS_IDLE)
+                TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE, TASK_TABLE_IS_IDLE)
                 + String.format("FROM %s t ", TRANSACTION_TABLE_NAME)
                 + String.format("INNER JOIN (SELECT * FROM %s) tt ", TASK_TABLE_NAME)
                 + String.format("ON t.%s = tt.%s ", TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID)
                 + String.format("WHERE t.%s='%s' GROUP BY t.%s ", TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID);
     }
 
-    static String getTaskByIdSQL(int taskId) {
-        return String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TASK_TABLE_NAME, TASK_TABLE_TASK_ID, taskId);
+    static String getTransactionTableJoinTaskTableOnDate(String date) {
+        return String.format("SELECT * FROM %s AS t " +
+                        "INNER JOIN (SELECT * FROM %s) tt ON t.%s = tt.%s " +
+                        "WHERE t.%s ='%s'",
+                TRANSACTION_TABLE_NAME,
+                TASK_TABLE_NAME, TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID,
+                TRANSACTION_TABLE_DATE, date);
     }
 
     static String getDropTableSQL(String tableName) {
@@ -77,33 +75,35 @@ public class DatabaseConstants {
     }
 
     static String getTasksQueryByStateSQL(int taskType) {
-        String sql;
         if (taskType == TaskItem.ALL) {
-            sql = "SELECT rowid _id, * FROM " + TASK_TABLE_NAME;
-        } else {
-            sql = String.format("SELECT rowid _id, * FROM %s WHERE %s=%s", TASK_TABLE_NAME, TASK_TABLE_IS_IDLE, taskType);
+            return getRecordsByFieldsSQL(TASK_TABLE_NAME);
         }
-        return sql;
+        return getRecordsByFieldsSQL(TASK_TABLE_NAME, new Pair(TASK_TABLE_IS_IDLE, Integer.toString(taskType)));
     }
 
-    static String getUniqueTransanctionDateSQL(int taskId) {
-        String sql = String.format("SELECT DISTINCT(%s) FROM %s WHERE %s='%s'", TRANSACTION_TABLE_DATE, TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskId);
-        return sql;
+    static String getRecordsByFieldsSQL(String tableName, Pair... pairs) {
+        StringBuilder builder = new StringBuilder(String.format("SELECT rowid _id, * FROM %s", tableName));
+        return populatePairsIntoQuery(builder, pairs).toString();
     }
 
-    static String getRecordsByFields(String tableName, DatabaseHelper.Pair... pairs) {
-        StringBuilder builder = new StringBuilder(String.format("SELECT * FROM %s", tableName));
-
+    private static StringBuilder populatePairsIntoQuery(StringBuilder builder, Pair[] pairs) {
+        if (pairs.length == 0) {
+            return builder;
+        }
         builder.append(String.format(" WHERE %s='%s'", pairs[0].getFieldName(), pairs[0].getVal()));
         for (int i = 1; i < pairs.length; i++) {
             builder.append(String.format(" AND %s='%s'", pairs[i].getFieldName(), pairs[i].getVal()));
         }
+        return builder;
+    }
 
-        return builder.toString();
+    static String getUniqueRecordsByFieldsSQL(String tableName, String recordName, Pair... pairs) {
+        StringBuilder builder = new StringBuilder(String.format("SELECT DISTINCT(%s) FROM %s", recordName, tableName));
+        return populatePairsIntoQuery(builder, pairs).toString();
     }
 
     static String getHoursByDateSQL(String date, int taskId) {
-        return String.format("SELECT SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
+        return String.format("SELECT rowid _id, SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
                 TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
     }
 

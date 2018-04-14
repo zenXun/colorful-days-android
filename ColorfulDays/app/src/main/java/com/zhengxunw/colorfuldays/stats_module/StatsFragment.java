@@ -10,12 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.StatsUtils;
-import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
@@ -118,7 +115,7 @@ public class StatsFragment extends Fragment {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
 
-            final TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
+            final TaskItem taskItem = DatabaseHelper.getTaskItem(cursor);
             StatsUtils.populateStatsRow(db, taskItem, view);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -33,6 +33,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 import static android.content.ContentValues.TAG;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_IS_IDLE;
 
 public class HomeFragment extends Fragment {
 
@@ -56,8 +57,7 @@ public class HomeFragment extends Fragment {
                     String destListType = view.getTag().toString();
                     if (srcListType.equals(Constants.IDLE_TASK_TAG)
                             && destListType.equals(Constants.WORKING_TASK_TAG)) {
-                        DatabaseHelper.getInstance(getContext())
-                                .updateTaskState(dragContext.taskItem.getId(), TaskItem.WORKING);
+                        db.updateTaskAttribute(dragContext.taskItem.getId(), TASK_TABLE_IS_IDLE, TaskItem.WORKING);
                         notifyAdapters();
                     }
                     break;
@@ -188,17 +188,17 @@ public class HomeFragment extends Fragment {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             Log.d(TAG, "bindView: idle task on HomeFragment");
-            TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
+            TaskItem taskItem = DatabaseHelper.getTaskItem(cursor);
             // listeners setup
             view.setOnClickListener(new idleTaskOnClickListener(taskItem));
             view.setOnLongClickListener(new idleTaskOnLongClickListener(new DragContext(view, taskItem)));
             view.setOnDragListener(taskDropListener);
 
             // text population and color setting
-            int bgColor = DatabaseHelper.getColorInTaskTable(cursor);
+            int bgColor = taskItem.getColor();
             view.setBackgroundColor(bgColor);
             TextView task = view.findViewById(android.R.id.text1);
-            task.setText(DatabaseHelper.getNameInTaskTable(cursor));
+            task.setText(taskItem.getTaskName());
             task.setTextColor(CustomizedColorUtils.getTextColor(bgColor));
         }
     }
@@ -220,7 +220,7 @@ public class HomeFragment extends Fragment {
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             Log.d(TAG, "bindView: working task on HomeFragment");
-            TaskItem taskItem = DatabaseHelper.getTaskItemInTaskTable(cursor);
+            TaskItem taskItem = DatabaseHelper.getTaskItem(cursor);
             // time counting thread setup
             int taskId = taskItem.getId();
             homeContext.putTaskTextView(taskId, (TextView) view.findViewById(android.R.id.text2));
@@ -262,7 +262,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void switchTaskStateToIdle(int taskId) {
-        db.updateTaskState(taskId, TaskItem.IDLE);
+        db.updateTaskAttribute(taskId, TASK_TABLE_IS_IDLE, TaskItem.IDLE);
         homeContext.stopRunningTask(taskId);
         homeContext.clearTaskResource(taskId);
         notifyAdapters();

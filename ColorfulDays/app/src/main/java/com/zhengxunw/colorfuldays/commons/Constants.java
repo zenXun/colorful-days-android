@@ -15,6 +15,10 @@ public class Constants {
     public static final int WEEKLY_GRAPH = 2;
     public static final int MONTHLY_GRAPH = 3;
 
+    public static final int DAILY_GOAL = 1;
+    public static final int WEEKLY_GOAL = 2;
+    public static final int MONTHLY_GOAL = 3;
+
     public static final String IDLE_TASK_TAG = "idle task";
     public static final String WORKING_TASK_TAG = "working task";
     public static final String LOCAL_STORAGE_TASK_TO_STARTTIME_KEY = "startTime";

@@ -5,19 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Color;
 
 import com.zhengxunw.colorfuldays.commons.Constants;
-import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_COLOR;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_DATE;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.CALENDAR_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.DATABASE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_IS_IDLE;
@@ -29,9 +22,7 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getCalendarTableCreationSQL;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getColorOfTaskIdSQL;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getDropTableSQL;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskByIdSQL;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getRecordsByFieldsSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskTableCreationSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTasksQueryByStateSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTransactionTableCreationSQL;
@@ -58,52 +49,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return mInstance;
     }
 
-    public static TaskItem getTaskItemInTaskTable(Cursor cursor) {
-        return new TaskItem(getIdFromTaskTable(cursor),
-                getNameInTaskTable(cursor),
-                getHourInTaskColor(cursor),
-                getColorInTaskTable(cursor),
-                getStateFromTaskTable(cursor));
+    public static TaskItem getTaskItem(Cursor cursor) {
+        return new TaskItem((Integer) getFieldFromCursor(cursor, TASK_TABLE_TASK_ID),
+                (String) getFieldFromCursor(cursor, TASK_TABLE_TASK_NAME),
+                (Float) getFieldFromCursor(cursor, TASK_TABLE_TASK_HOUR),
+                (Integer) getFieldFromCursor(cursor, TASK_TABLE_COLOR),
+                (Integer) getFieldFromCursor(cursor, TASK_TABLE_IS_IDLE));
     }
 
-    public static TaskItem getTaskItemFromTransJoinTaskTable(Cursor cursor) {
-        return new TaskItem(getTaskIdFromTransTable(cursor),
-                getNameInTaskTable(cursor),
-                getHourInTransTable(cursor),
-                getColorInTaskTable(cursor),
-                getStateFromTaskTable(cursor));
-    }
-
-    public static int getStateFromTaskTable(Cursor cursor) {
-        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_IS_IDLE));
-    }
-
-    public static int getIdFromTaskTable(Cursor cursor) {
-        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_TASK_ID));
-    }
-
-    public static String getNameInTaskTable(Cursor cursor) {
-        return cursor.getString(cursor.getColumnIndex(TASK_TABLE_TASK_NAME));
-    }
-
-    public static int getColorInTaskTable(Cursor cursor) {
-        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_COLOR));
-    }
-
-    public static float getHourInTaskColor(Cursor cursor) {
-        return cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
-    }
-
-    public static int getTaskIdFromTransTable(Cursor cursor) {
-        return cursor.getInt(cursor.getColumnIndex(TASK_TABLE_TASK_ID));
-    }
-
-    public static float getHourInTransTable(Cursor cursor) {
-        return cursor.getFloat(cursor.getColumnIndex(TRANSACTION_TABLE_TASK_HOUR));
-    }
-
-    public static int getColorInColorTable(Cursor cursor) {
-        return cursor.getInt(cursor.getColumnIndex(CALENDAR_TABLE_COLOR));
+    public static Object getFieldFromCursor(Cursor cursor, String fieldName) {
+        int idx = cursor.getColumnIndexOrThrow(fieldName);
+        switch (cursor.getType(idx)) {
+            case Cursor.FIELD_TYPE_INTEGER:
+                return cursor.getInt(idx);
+            case Cursor.FIELD_TYPE_FLOAT:
+                return cursor.getFloat(idx);
+            case Cursor.FIELD_TYPE_STRING:
+        }
+        return cursor.getString(idx);
     }
 
     @Override
@@ -114,24 +77,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL(getDropTableSQL(TASK_TABLE_NAME));
-        sqLiteDatabase.execSQL(getDropTableSQL(TRANSACTION_TABLE_NAME));
-        sqLiteDatabase.execSQL(getDropTableSQL(CALENDAR_TABLE_NAME));
-    }
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-    /**
-     * task table
-     */
-
-    public Integer getTaskColor(int taskId) {
-        Cursor taskCursor = db.rawQuery(getColorOfTaskIdSQL(taskId), null);
-        taskCursor.moveToFirst();
-        if (taskCursor.getCount() > 0) {
-            return getColorInTaskTable(taskCursor);
-        }
-        taskCursor.close();
-        return null;
     }
 
     public boolean addNewTask(TaskItem task) {
@@ -143,48 +90,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(TASK_TABLE_NAME, task.toContentValues(), where, null) != -1;
     }
 
-    public boolean deleteTask(TaskItem task) {
-        String whereInTask = String.format("%s='%s'", TASK_TABLE_TASK_ID, task.getId());
-        String whereInTrans = String.format("%s='%s'", TASK_TABLE_TASK_ID, task.getId());
-        return (db.delete(TASK_TABLE_NAME, whereInTask, null) != -1) &&
-                (db.delete(TRANSACTION_TABLE_NAME, whereInTrans, null) != -1);
-    }
-
-    public boolean removeTask(int taskId) {
+    public boolean deleteTask(int taskId) {
         String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
-        return db.delete(TASK_TABLE_NAME, where, null) != -1;
-    }
-
-    public boolean removeTaskTransactions(int taskId) {
-        String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
-        return db.delete(TRANSACTION_TABLE_NAME, where, null) != -1;
+        return (db.delete(TASK_TABLE_NAME, where, null) != -1)
+                && (db.delete(TRANSACTION_TABLE_NAME, where, null) != -1);
     }
 
     public boolean addTaskTime(int taskId, float timeAdded) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(TASK_TABLE_TASK_HOUR, getTime(taskId) + timeAdded);
+        contentValues.put(TASK_TABLE_TASK_HOUR, getTaskTimeByTaskId(taskId) + timeAdded);
         String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
         return db.update(TASK_TABLE_NAME, contentValues, where, null) != -1;
     }
 
-    public float getTime(int taskId) {
-        String queryTime = String.format("SELECT rowid _id, * FROM %s WHERE %s='%s'", TASK_TABLE_NAME, TASK_TABLE_TASK_ID, taskId);
-        Cursor cursor = db.rawQuery(queryTime, null);
+    private Integer getTaskColorByTaskId(int taskId) {
+        Cursor taskCursor = db.rawQuery(DatabaseConstants.getRecordsByFieldsSQL(
+                TASK_TABLE_NAME,
+                new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))), null);
+        taskCursor.moveToFirst();
+        int color = (Integer) getFieldFromCursor(taskCursor, TASK_TABLE_COLOR);
+        taskCursor.close();
+        return color;
+    }
+
+    private float getTaskTimeByTaskId(int taskId) {
+        Cursor cursor = db.rawQuery(DatabaseConstants.getRecordsByFieldsSQL(
+                TASK_TABLE_NAME, new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))
+        ), null);
         cursor.moveToFirst();
-        float time = cursor.getFloat(cursor.getColumnIndex(TASK_TABLE_TASK_HOUR));
+        float time = (Float) getFieldFromCursor(cursor, TASK_TABLE_TASK_HOUR);
         cursor.close();
         return time;
     }
 
-    private boolean updateTaskAttribute(int taskId, String columnName, int newVal) {
+    public boolean updateTaskAttribute(int taskId, String columnName, int newVal) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(columnName, newVal);
         String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
         return db.update(TASK_TABLE_NAME, contentValues, where, null) != -1;
-    }
-
-    public boolean updateTaskState(int taskId, int isIdle) {
-        return updateTaskAttribute(taskId, TASK_TABLE_IS_IDLE, isIdle);
     }
 
     public Cursor getTaskByState(int taskType) {
@@ -194,11 +137,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public String getFirstTransactionDate(int taskId) {
         Cursor cursor = db.rawQuery(DatabaseConstants.getFirstTransactionSQL(taskId), null);
         cursor.moveToFirst();
-        int idx = cursor.getColumnIndex(DatabaseConstants.TRANSACTION_TABLE_DATE);
-        String ret = null;
-        if (cursor.getCount() != 0 && idx >= 0) {
-            ret = cursor.getString(idx);
+        if (cursor.getCount() == 0) {
+            return null;
         }
+        String ret = (String) getFieldFromCursor(cursor, TRANSACTION_TABLE_DATE);
         cursor.close();
         return ret;
     }
@@ -212,7 +154,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getTaskById(int taskId) {
-        return db.rawQuery(getTaskByIdSQL(taskId), null);
+        return db.rawQuery(getRecordsByFieldsSQL(
+                TASK_TABLE_NAME, new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))
+        ), null);
     }
 
     /**
@@ -230,22 +174,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(DatabaseConstants.getTransactionsGroupByTaskOnDateSQL(date), null);
     }
 
-    public Cursor queryTransactionByDate(String date) {
-        String sql = DatabaseConstants.getRecordsByFields(TRANSACTION_TABLE_NAME, new Pair(TRANSACTION_TABLE_DATE, date));
-        return db.rawQuery(sql, null);
+    public Cursor queryTransactionJoinTaskByDate(String date) {
+        return db.rawQuery(DatabaseConstants.getTransactionTableJoinTaskTableOnDate(date), null);
     }
 
     public Cursor queryUniqueTransactionsDate(int id) {
-        return db.rawQuery(DatabaseConstants.getUniqueTransanctionDateSQL(id), null);
-    }
-
-    public Cursor queryTransactionByTask(int id) {
-        String sql = DatabaseConstants.getRecordsByFields(TRANSACTION_TABLE_NAME, new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
-        return db.rawQuery(sql, null);
+        return db.rawQuery(DatabaseConstants.getUniqueRecordsByFieldsSQL(
+                TRANSACTION_TABLE_NAME,
+                TRANSACTION_TABLE_DATE,
+                new Pair(TASK_TABLE_TASK_ID, Integer.toString(id))), null);
     }
 
     public Cursor queryTransactionByDateAndTask(String date, int id) {
-        String sql = DatabaseConstants.getRecordsByFields(TRANSACTION_TABLE_NAME, new Pair(TRANSACTION_TABLE_DATE, date), new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
+        String sql = DatabaseConstants.getRecordsByFieldsSQL(TRANSACTION_TABLE_NAME, new Pair(TRANSACTION_TABLE_DATE, date), new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
         return db.rawQuery(sql, null);
     }
 
@@ -257,71 +198,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 return null;
             case Constants.MONTHLY_GRAPH:
                 return null;
-            default:
-                break;
         }
         return null;
     }
 
-//    private Cursor queryHourByWeek(Calendar calendar, int id) {
-//        return db.rawQuery(DatabaseConstants.getHoursByWeekSQL());
-//    }
-
     private Cursor queryHourByDate(String date, int id) {
         return db.rawQuery(DatabaseConstants.getHoursByDateSQL(date, id), null);
-    }
-
-    /**
-     * color table
-     * */
-    public boolean appendCalendarEntry(String date, int colorCode) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(CALENDAR_TABLE_DATE, date);
-        contentValues.put(CALENDAR_TABLE_COLOR, colorCode);
-        return db.insert(CALENDAR_TABLE_NAME, null, contentValues) != -1;
-    }
-
-    /**
-     * calendar related
-     * */
-
-    public int generateColorOnDate(String key) {
-        Map<Integer, Float> colorToHour = new HashMap<>();
-        try (Cursor dateCursor = queryTransactionByDate(key)) {
-            dateCursor.moveToFirst();
-            if (dateCursor.getCount() == 0) {
-                return Color.WHITE;
-            }
-            do {
-                int taskId = getTaskIdFromTransTable(dateCursor);
-                float hour = getHourInTransTable(dateCursor);
-                Integer curColor = getTaskColor(taskId);
-                if (curColor != null && hour > 0) {
-                    float passHour = colorToHour.getOrDefault(curColor, 0f);
-                    colorToHour.put(curColor, passHour + hour);
-                }
-            } while (dateCursor.moveToNext());
-        }
-        return CustomizedColorUtils.mixColors(colorToHour);
-    }
-
-    class Pair {
-
-        String fieldName;
-        String val;
-
-        Pair(String fieldName, String val) {
-            this.fieldName = fieldName;
-            this.val = val;
-        }
-
-        public String getFieldName() {
-            return fieldName;
-        }
-
-        public String getVal() {
-            return val;
-        }
     }
 
 }

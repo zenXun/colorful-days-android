@@ -52,7 +52,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         transCursor.moveToFirst();
         do {
             if (transCursor.getCount() > 0) {
-                tasks.add(DatabaseHelper.getTaskItemFromTransJoinTaskTable(transCursor));
+                tasks.add(DatabaseHelper.getTaskItem(transCursor));
             }
         } while (transCursor.moveToNext());
         todayTasks.setAdapter(new todayTasksAdapter(context, tasks));

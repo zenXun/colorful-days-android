@@ -25,6 +25,12 @@ import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
+import static com.zhengxunw.colorfuldays.database.DatabaseHelper.getFieldFromCursor;
 
 
 /**
@@ -125,7 +131,7 @@ public class CustomizedCalendarView extends LinearLayout {
                 if (isCellOutsideCurrentMonth(date)) {
                     return;
                 }
-                Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionByDate(TimeUtils.getDateKey(date));
+                Cursor cursor = DatabaseHelper.getInstance(getContext()).queryTransactionJoinTaskByDate(TimeUtils.getDateKey(date));
                 cursor.moveToFirst();
                 if (cursor.getCount() > 0) {
                     Intent intent = new Intent(getContext(), DailyTaskHistoryActivity.class);
@@ -175,10 +181,6 @@ public class CustomizedCalendarView extends LinearLayout {
         return cells;
     }
 
-    private int generateDayColor(Date date) {
-        return DatabaseHelper.getInstance(getContext()).generateColorOnDate(TimeUtils.getDateKey(date));
-    }
-
     private class CalendarAdapter extends ArrayAdapter<Date> {
 
         // for view inflation
@@ -210,7 +212,7 @@ public class CustomizedCalendarView extends LinearLayout {
                 if (isCellToday(date)) {
                     ((TextView) view).setTypeface(null, Typeface.BOLD);
                 }
-                int bgColor = generateDayColor(date);
+                int bgColor = generateColorOnDate(TimeUtils.getDateKey(date));
                 ((TextView) view).setTextColor(CustomizedColorUtils.getTextColor(bgColor));
                 view.setBackgroundColor(bgColor);
             }
@@ -236,5 +238,24 @@ public class CustomizedCalendarView extends LinearLayout {
         // today
         Date todayInThisMonth = currentDate.getTime();
         return (month != todayInThisMonth.getMonth()) || (year != todayInThisMonth.getYear());
+    }
+
+    private int generateColorOnDate(String key) {
+        Map<Integer, Float> colorToHour = new HashMap<>();
+        try (Cursor dateCursor = db.queryTransactionJoinTaskByDate(key)) {
+            dateCursor.moveToFirst();
+            if (dateCursor.getCount() == 0) {
+                return Color.WHITE;
+            }
+            do {
+                float hour = (Float) getFieldFromCursor(dateCursor, TRANSACTION_TABLE_TASK_HOUR);
+                int curColor = (Integer) getFieldFromCursor(dateCursor, TASK_TABLE_COLOR);
+                if (hour > 0) {
+                    float passHour = colorToHour.getOrDefault(curColor, 0f);
+                    colorToHour.put(curColor, passHour + hour);
+                }
+            } while (dateCursor.moveToNext());
+        }
+        return CustomizedColorUtils.mixColors(colorToHour);
     }
 }
