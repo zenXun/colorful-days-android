@@ -3,8 +3,6 @@ package com.zhengxunw.colorfuldays.calendar_module;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -33,7 +31,6 @@ import java.util.ArrayList;
 public class DailyTaskHistoryActivity extends AppCompatActivity {
 
     String date;
-    private Context context;
     private DatabaseHelper db;
 
     @Override
@@ -41,15 +38,25 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         Slidr.attach(this, Constants.slidrConfig);
-        context = getApplicationContext();
+        Context context = getApplicationContext();
         db = DatabaseHelper.getInstance(context);
 
         setContentView(R.layout.activity_task_daily_history);
-        ListView todayTasks = findViewById(R.id.today_tasks);
         date = getIntent().getStringExtra(CustomizedCalendarView.DAILY_TASK_INTENT_EXTRA_KEY);
         TextView dateTV = findViewById(R.id.date_tv);
         dateTV.setText(date);
 
+        Toolbar toolbar = findViewById(R.id.daily_activity_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ListView todayTasks = findViewById(R.id.today_tasks);
         ArrayList<TaskItem> tasks = new ArrayList<>();
         Cursor transCursor = db.queryTransactionGroupByTaskByDate(date);
         transCursor.moveToFirst();
@@ -58,13 +65,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
                 tasks.add(DatabaseHelper.getTaskItem(transCursor));
             }
         } while (transCursor.moveToNext());
-        todayTasks.setAdapter(new todayTasksAdapter(context, tasks));
-
-        Toolbar toolbar = findViewById(R.id.daily_activity_toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+        todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
     }
 
     @Override
@@ -80,11 +81,8 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
 
     class todayTasksAdapter extends ArrayAdapter<TaskItem> {
 
-        private Context context;
-
         public todayTasksAdapter(Context context, ArrayList<TaskItem> tasks) {
             super(context, 0, tasks);
-            this.context = context;
         }
 
         @Override
@@ -93,12 +91,12 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             TaskItem task = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.stats_task_row, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.daily_history_row, parent, false);
             }
             // Lookup view for data population
             TextView taskTimesTV = convertView.findViewById(R.id.task_days_tv);
-            TextView taskPartTV = (TextView) convertView.findViewById(R.id.task_name_part);
-            TextView hourPartTV = (TextView) convertView.findViewById(R.id.task_hour_part);
+            TextView taskPartTV = convertView.findViewById(R.id.task_name_part);
+            TextView hourPartTV = convertView.findViewById(R.id.task_hour_part);
             ListView taskNotePart = convertView.findViewById(R.id.task_note_parts);
             ArrayList<String> notes = new ArrayList<>();
 
@@ -108,31 +106,44 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
                 notes.add((String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_NOTE));
             }
             cursor.close();
+            int bgColor = task.getColor();
+            int txtColor = CustomizedColorUtils.getTextColor(bgColor);
+            todayTaskNotesAdapter notesAdapter = new todayTaskNotesAdapter(getContext(), notes, txtColor);
+            taskNotePart.setAdapter(notesAdapter);
+            adjustNoteListHeight(notesAdapter, taskNotePart);
+
             // Populate the data into the template view using the data object
             taskPartTV.setText(task.getTaskName());
             hourPartTV.setText(TimeUtils.getDisplayHour(task.getTaskHour()));
             taskTimesTV.setText("Did " + times + " times");
-
-            int bgColor = task.getColor();
-            int txtColor = CustomizedColorUtils.getTextColor(bgColor);
             taskTimesTV.setTextColor(txtColor);
             taskPartTV.setTextColor(txtColor);
             hourPartTV.setTextColor(txtColor);
             convertView.setBackgroundColor(bgColor);
-            taskNotePart.setAdapter(new todayTaskNotesAdapter(this.context, notes, txtColor));
             // Return the completed view to render on screen
             return convertView;
         }
     }
 
+    private void adjustNoteListHeight(todayTaskNotesAdapter notesAdapter, ListView taskNotePart) {
+        int totalHeight = 0;
+        for (int i = 0; i < notesAdapter.getCount(); i++) {
+            View listItem = notesAdapter.getView(i, null, taskNotePart);
+            listItem.measure(0, 0);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+        ViewGroup.LayoutParams params = taskNotePart.getLayoutParams();
+        params.height = totalHeight + (taskNotePart.getDividerHeight() * (notesAdapter.getCount() - 1));
+        taskNotePart.setLayoutParams(params);
+        taskNotePart.requestLayout();
+    }
+
     class todayTaskNotesAdapter extends ArrayAdapter<String> {
 
-        private Context context;
         private int textColor;
 
         public todayTaskNotesAdapter(Context context, ArrayList<String> notes, int textColor) {
             super(context, 0, notes);
-            this.context = context;
             this.textColor = textColor;
         }
 
@@ -140,7 +151,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             String note = getItem(position);
             if (convertView == null) {
-                convertView = LayoutInflater.from(this.context).inflate(android.R.layout.simple_list_item_1, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
             }
             TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
             tv.setText(note);

@@ -20,6 +20,7 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_T
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_ID;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_DATE;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_ID;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getRecordsByFieldsSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskTableCreationSQL;
@@ -109,7 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private float getTaskTimeByTaskId(int taskId) {
         Cursor cursor = db.rawQuery(DatabaseConstants.getRecordsByFieldsSQL(
-                TASK_TABLE_NAME, new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))
+                TASK_TABLE_NAME,  TASK_TABLE_TASK_ID, false, new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))
         ), null);
         cursor.moveToFirst();
         float time = (Float) getFieldFromCursor(cursor, TASK_TABLE_TASK_HOUR);
@@ -147,9 +148,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return days;
     }
 
-    public Cursor getTaskById(int taskId) {
+    public Cursor getCursorTaskById(int taskId) {
         return db.rawQuery(getRecordsByFieldsSQL(
-                TASK_TABLE_NAME, new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))
+                TASK_TABLE_NAME, TASK_TABLE_TASK_ID, false, new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))
         ), null);
     }
 
@@ -172,11 +173,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(DatabaseConstants.getUniqueRecordsByFieldsSQL(
                 TRANSACTION_TABLE_NAME,
                 TRANSACTION_TABLE_DATE,
+                false,
                 new Pair(TASK_TABLE_TASK_ID, Integer.toString(id))), null);
     }
 
+    public Cursor queryTransactionsByTaskId(int id, boolean descend) {
+        return db.rawQuery(DatabaseConstants.getRecordsByFieldsSQL(
+                TRANSACTION_TABLE_NAME,
+                TRANSACTION_TABLE_ID,
+                descend,
+                new Pair(TASK_TABLE_TASK_ID, Integer.toString(id))), null
+        );
+    }
+
     public Cursor queryTransactionByDateAndTask(String date, int id) {
-        String sql = DatabaseConstants.getRecordsByFieldsSQL(TRANSACTION_TABLE_NAME, new Pair(TRANSACTION_TABLE_DATE, date), new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
+        String sql = DatabaseConstants.getRecordsByFieldsSQL(TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_ID, false, new Pair(TRANSACTION_TABLE_DATE, date), new Pair(TASK_TABLE_TASK_ID, Integer.toString(id)));
         return db.rawQuery(sql, null);
     }
 

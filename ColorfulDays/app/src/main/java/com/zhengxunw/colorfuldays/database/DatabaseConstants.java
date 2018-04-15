@@ -37,10 +37,6 @@ public class DatabaseConstants {
         return String.format("SELECT rowid _id, * FROM %s WHERE %s='%s' ORDER BY %s ASC LIMIT 1;", TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskID, TRANSACTION_TABLE_DATE);
     }
 
-    static String getLastTransactionSQL() {
-        return String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE);
-    }
-
     static String getTransactionsGroupByTaskOnDateSQL(String date) {
         return String.format("SELECT t.%s AS %s, SUM(t.%s) AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s ",
                 TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE, TASK_TABLE_IS_IDLE, TASK_TABLE_GOAL, TASK_TABLE_GOAL, TASK_TABLE_GOAL_TYPE, TASK_TABLE_GOAL_TYPE)
@@ -65,17 +61,17 @@ public class DatabaseConstants {
 
     static String getTasksQueryByStateSQL(int taskType) {
         if (taskType == TaskItem.ALL) {
-            return getRecordsByFieldsSQL(TASK_TABLE_NAME);
+            return getRecordsByFieldsSQL(TASK_TABLE_NAME, TASK_TABLE_TASK_ID, false);
         }
-        return getRecordsByFieldsSQL(TASK_TABLE_NAME, new Pair(TASK_TABLE_IS_IDLE, Integer.toString(taskType)));
+        return getRecordsByFieldsSQL(TASK_TABLE_NAME, TASK_TABLE_TASK_ID, false, new Pair(TASK_TABLE_IS_IDLE, Integer.toString(taskType)));
     }
 
-    static String getRecordsByFieldsSQL(String tableName, Pair... pairs) {
+    static String getRecordsByFieldsSQL(String tableName, String orderField, boolean descend, Pair... pairs) {
         StringBuilder builder = new StringBuilder(String.format("SELECT rowid _id, * FROM %s", tableName));
-        return populatePairsIntoQuery(builder, pairs).toString();
+        return populatePairsIntoQuery(builder, orderField, descend, pairs).toString();
     }
 
-    private static StringBuilder populatePairsIntoQuery(StringBuilder builder, Pair[] pairs) {
+    private static StringBuilder populatePairsIntoQuery(StringBuilder builder, String orderField, boolean descend, Pair[] pairs) {
         if (pairs.length == 0) {
             return builder;
         }
@@ -83,17 +79,21 @@ public class DatabaseConstants {
         for (int i = 1; i < pairs.length; i++) {
             builder.append(String.format(" AND %s='%s'", pairs[i].getFieldName(), pairs[i].getVal()));
         }
-        return builder;
+        return setOrder(builder, orderField, descend);
     }
 
-    static String getUniqueRecordsByFieldsSQL(String tableName, String recordName, Pair... pairs) {
+    private static StringBuilder setOrder(StringBuilder stringBuilder, String orderField, boolean descend) {
+        if (descend) {
+            stringBuilder.append(String.format(" ORDER BY %s DESC", orderField));
+        } else {
+            stringBuilder.append(String.format(" ORDER BY %s ASC", orderField));
+        }
+        return stringBuilder;
+    }
+
+    static String getUniqueRecordsByFieldsSQL(String tableName, String recordName, boolean descend, Pair... pairs) {
         StringBuilder builder = new StringBuilder(String.format("SELECT DISTINCT(%s) FROM %s", recordName, tableName));
-        return populatePairsIntoQuery(builder, pairs).toString();
-    }
-
-    static String getTaskHoursOnDate(String date, int taskId) {
-        return String.format("SELECT rowid _id, SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
-                TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
+        return populatePairsIntoQuery(builder, recordName, descend, pairs).toString();
     }
 
     static String getTaskHoursOnDateRange(String startDate, String endDate, int taskId) {

@@ -295,8 +295,10 @@ public class HomeFragment extends Fragment {
             if (timeAdded > 0) {
                 db.addTaskTime(taskId, timeAdded);
                 db.appendTransaction(new TransactionItem(taskId, TimeUtils.getCurrentDateKey(), timeAdded, taskNote));
+                toastMsg(taskItem.getTaskName() + " " + String.format(locale, "%.02f", timeAdded) + " hours");
+            } else {
+                toastMsg("Time is 0. Task wasn't added.");
             }
-            toastMsg(taskItem.getTaskName() + " " + String.format(locale, "%.02f", timeAdded) + " hours");
         }
     }
 

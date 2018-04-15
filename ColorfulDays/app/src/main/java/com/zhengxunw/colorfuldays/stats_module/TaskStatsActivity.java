@@ -1,8 +1,8 @@
 package com.zhengxunw.colorfuldays.stats_module;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -12,26 +12,31 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.r0adkll.slidr.Slidr;
-import com.zhengxunw.colorfuldays.MainActivity;
 import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.GraphTab;
 import com.zhengxunw.colorfuldays.commons.StatsUtils;
 import com.zhengxunw.colorfuldays.commons.TaskSettingActivity;
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_START_DATE;
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
 
 public class TaskStatsActivity extends AppCompatActivity {
@@ -41,7 +46,13 @@ public class TaskStatsActivity extends AppCompatActivity {
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.task_name_part) TextView taskNameTV;
     @BindView(R.id.task_hour_part) TextView taskHourTV;
+    @BindView(R.id.task_start_date_tv) TextView taskStartDaysTV;
+    @BindView(R.id.stats_total_days) TextView totalDaysTV;
+    @BindView(R.id.stats_daily_average) TextView dailyAvgTV;
+    @BindView(R.id.stats_task_note) ListView taskNotesLV;
+    private DatabaseHelper db;
     private TaskItem taskItem;
+    private String startDate;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,9 +60,13 @@ public class TaskStatsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_task_stats);
         ButterKnife.bind(this);
         Slidr.attach(this, Constants.slidrConfig);
+        db = DatabaseHelper.getInstance(getApplicationContext());
 
         taskItem = getIntent().getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
-        StatsUtils.populateStatsRow(DatabaseHelper.getInstance(getApplicationContext()), taskItem, findViewById(R.id.task_info_row));
+        startDate = getIntent().getStringExtra(INTENT_EXTRA_START_DATE);
+        StatsUtils.populateStatsRow(taskItem, findViewById(R.id.task_info_row));
+        populateStatsPart();
+        populateNotePart();
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -96,17 +111,38 @@ public class TaskStatsActivity extends AppCompatActivity {
         });
     }
 
+    private void populateStatsPart() {
+        Cursor cursor = db.queryUniqueTransactionsDate(taskItem.getId());
+        int totalDays = cursor.getCount();
+        taskStartDaysTV.setText((startDate == null ? "Haven't started yet." : "Started from:\n" + startDate));
+        totalDaysTV.setText("Days insisted:\n" + totalDays);
+        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : taskItem.getTaskHour() / totalDays));
+    }
+
+    private void populateNotePart() {
+        ArrayList<String> notes = new ArrayList<>();
+        Cursor cursor = db.queryTransactionsByTaskId(taskItem.getId(), true);
+        while (cursor.moveToNext()) {
+            String note = (String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_NOTE);
+            if (!note.isEmpty()) {
+                notes.add((String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_DATE) + "\n" + note);
+            }
+
+        }
+        taskNotesLV.setAdapter(new taskNotesAdapter(getApplicationContext(), notes));
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        Cursor cursor = DatabaseHelper.getInstance(getApplicationContext()).getTaskById(taskItem.getId());
+        Cursor cursor = db.getCursorTaskById(taskItem.getId());
         if (cursor.getCount() <= 0) {
             onBackPressed();
             return;
         }
         cursor.moveToFirst();
         taskItem = DatabaseHelper.getTaskItem(cursor);
-        StatsUtils.populateStatsRow(DatabaseHelper.getInstance(getApplicationContext()), taskItem, findViewById(R.id.task_info_row));
+        StatsUtils.populateStatsRow(taskItem, findViewById(R.id.task_info_row));
     }
 
     @Override
@@ -161,6 +197,27 @@ public class TaskStatsActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return tabCount;
+        }
+    }
+
+    class taskNotesAdapter extends ArrayAdapter<String> {
+
+        private Context context;
+
+        public taskNotesAdapter(Context context, ArrayList<String> notes) {
+            super(context, 0, notes);
+            this.context = context;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            String note = getItem(position);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(this.context).inflate(android.R.layout.simple_list_item_1, parent, false);
+            }
+            TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
+            tv.setText(note);
+            return convertView;
         }
     }
 

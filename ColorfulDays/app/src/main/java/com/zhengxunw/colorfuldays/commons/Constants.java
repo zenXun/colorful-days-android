@@ -25,6 +25,7 @@ public class Constants {
     public static final String LOCAL_STORAGE_TASK_TO_STARTTIME_SEPARATOR = "_";
 
     public static final String INTENT_EXTRA_TASK_ITEM = "task item";
+    public static final String INTENT_EXTRA_START_DATE = "start date";
 
 
     public static final SlidrConfig slidrConfig = new SlidrConfig.Builder()
