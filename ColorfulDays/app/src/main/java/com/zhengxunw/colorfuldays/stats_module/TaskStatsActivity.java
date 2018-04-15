@@ -122,12 +122,28 @@ public class TaskStatsActivity extends AppCompatActivity {
     private void populateNotePart() {
         ArrayList<String> notes = new ArrayList<>();
         Cursor cursor = db.queryTransactionsByTaskId(taskItem.getId(), true);
+        StringBuilder sb = new StringBuilder();
+        String currDate = null;
         while (cursor.moveToNext()) {
             String note = (String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_NOTE);
-            if (!note.isEmpty()) {
-                notes.add((String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_DATE) + "\n" + note);
+            if (note.isEmpty()) {
+                continue;
             }
-
+            String date = (String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_DATE);
+            if (currDate == null) {
+                currDate = date;
+                sb.append(date + "\n" + note);
+            } else if (currDate.equals(date)) {
+                sb.append("\n" + note);
+            } else {
+                currDate = date;
+                notes.add(sb.toString());
+                sb = new StringBuilder();
+                sb.append(date + "\n" + note);
+            }
+        }
+        if (sb.length() > 0) {
+            notes.add(sb.toString());
         }
         taskNotesLV.setAdapter(new taskNotesAdapter(getApplicationContext(), notes));
     }
