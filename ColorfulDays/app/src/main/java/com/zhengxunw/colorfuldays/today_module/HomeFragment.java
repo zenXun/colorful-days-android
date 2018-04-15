@@ -2,6 +2,7 @@ package com.zhengxunw.colorfuldays.today_module;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -268,7 +269,6 @@ public class HomeFragment extends Fragment {
         notifyAdapters();
     }
 
-
     class taskOnTimeSetListener implements TimePickerDialog.OnTimeSetListener {
 
         TaskItem taskItem;
@@ -327,10 +327,53 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
+            TimePickerDialog timePickerDialog = new myTimePickerDialog(getContext(), R.style.HoloDialog,
                     new taskOnTimeSetListener(taskItem), 0, 0, true);
             timePickerDialog.setTitle(taskItem.getTaskName());
             timePickerDialog.show();
+        }
+    }
+
+    class myTimePickerDialog extends TimePickerDialog {
+
+        TimePicker mTimePicker;
+        private OnTimeSetListener mTimeSetListener;
+
+        myTimePickerDialog(Context context, int themeResId, OnTimeSetListener listener, int hourOfDay, int minute,
+                           boolean is24HourView) {
+            super(context, themeResId, listener, hourOfDay, minute, is24HourView);
+            final LayoutInflater inflater = LayoutInflater.from(context);
+            mTimeSetListener = listener;
+            final View view = inflater.inflate(R.layout.customized_time_picker, null);
+            mTimePicker = view.findViewById(R.id.myTimePicker);
+            mTimePicker.setIs24HourView(is24HourView);
+            mTimePicker.setCurrentHour(hourOfDay);
+            mTimePicker.setCurrentMinute(minute);
+            mTimePicker.setOnTimeChangedListener(this);
+            setView(view);
+        }
+
+        @Override
+        public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+            super.onTimeChanged(view, hourOfDay, minute);
+        }
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case BUTTON_POSITIVE:
+                    // Note this skips input validation and just uses the last valid time and hour
+                    // entry. This will only be invoked programmatically. User clicks on BUTTON_POSITIVE
+                    // are handled in show().
+                    if (mTimeSetListener != null) {
+                        mTimeSetListener.onTimeSet(mTimePicker, mTimePicker.getCurrentHour(),
+                                mTimePicker.getCurrentMinute());
+                    }
+                    break;
+                case BUTTON_NEGATIVE:
+                    cancel();
+                    break;
+            }
         }
     }
 
@@ -344,7 +387,7 @@ public class HomeFragment extends Fragment {
         @Override
         public void onClick(View view) {
             float timeAdded = TimeUtils.millisToHour(System.currentTimeMillis() - homeContext.getTaskStartTime(taskItem.getId()));
-            TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), R.style.HoloDialog,
+            TimePickerDialog timePickerDialog = new myTimePickerDialog(getContext(), R.style.HoloDialog,
                     new taskOnTimeSetListener(taskItem), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
             timePickerDialog.setTitle(taskItem.getTaskName());
             timePickerDialog.show();
