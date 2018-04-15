@@ -91,13 +91,14 @@ public class DatabaseConstants {
         return populatePairsIntoQuery(builder, pairs).toString();
     }
 
-    static String getHoursByGraphTypeSQL(String date, int taskId) {
+    static String getTaskHoursOnDate(String date, int taskId) {
         return String.format("SELECT rowid _id, SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
                 TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
     }
 
-    private static String getMonthFormat(int month) {
-        return String.valueOf(month);
+    static String getTaskHoursOnDateRange(String startDate, String endDate, int taskId) {
+        return String.format("SELECT rowid _id, SUM(%s) AS %s FROM %s WHERE %s='%s' and %s>='%s' and %s<'%s' GROUP BY %s",
+                TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskId, TRANSACTION_TABLE_DATE, startDate, TRANSACTION_TABLE_DATE, endDate, TASK_TABLE_TASK_ID);
     }
 
 }

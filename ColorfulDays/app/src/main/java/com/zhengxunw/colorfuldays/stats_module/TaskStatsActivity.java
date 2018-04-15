@@ -27,6 +27,7 @@ import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -162,4 +163,5 @@ public class TaskStatsActivity extends AppCompatActivity {
             return tabCount;
         }
     }
+
 }

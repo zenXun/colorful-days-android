@@ -16,7 +16,7 @@ import java.util.Locale;
 public class TimeUtils {
 
     public static final DateFormat DATE_FORMAT_HOME = new SimpleDateFormat("EEE, d MMM yyyy");
-    public static final DateFormat DATE_FORMAT_AS_KEY = new SimpleDateFormat("dd-MMM-yyyy");
+    public static final DateFormat DATE_FORMAT_AS_KEY = new SimpleDateFormat("yyyy-MM-dd");
     public static final DateFormat DATE_FORMAT_CALENDAR_TITLE = new SimpleDateFormat("MMM yyyy");
     public static final DateFormat MONTH_FORMAT = new SimpleDateFormat("MMM");
     public static final DateFormat WEEK_FORMAT = new SimpleDateFormat("dd-MMM");

@@ -180,12 +180,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(sql, null);
     }
 
-    public Cursor queryHourByDate(int id, Calendar cal) {
-        return queryHourByDate(TimeUtils.getDateKey(cal.getTime()), id);
-    }
-
-    private Cursor queryHourByDate(String date, int id) {
-        return db.rawQuery(DatabaseConstants.getHoursByGraphTypeSQL(date, id), null);
+    public Cursor queryHourInRange(String startDate, String endDate, int id) {
+        return db.rawQuery(DatabaseConstants.getTaskHoursOnDateRange(startDate, endDate, id), null);
     }
 
 }

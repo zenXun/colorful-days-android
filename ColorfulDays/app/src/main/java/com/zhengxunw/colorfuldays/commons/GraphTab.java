@@ -66,33 +66,43 @@ public class GraphTab extends Fragment {
         taskId = args.getInt(TASK_ID);
         graphType = args.getInt(GRAPH_TYPE);
         updateTaskItem();
-        displayGraph(taskId, graphType, taskItem.getGoal(), taskItem.getGoalType());
+        displayGraph(graphType);
         return view;
     }
 
-    private void updateTaskItem() {
+    private boolean updateTaskItem() {
         Cursor cursor = db.getTaskById(taskId);
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             taskItem = DatabaseHelper.getTaskItem(cursor);
+            return true;
         }
+        return false;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        updateTaskItem();
-        displayGraph(taskItem.getId(), graphType, taskItem.getGoal(), taskItem.getGoalType());
+        if (updateTaskItem()) {
+            displayGraph(graphType);
+        }
     }
 
-    private void displayGraph(int taskId, int graphType, int goal, int goalType) {
+    private void displayGraph(int graphType) {
         List<BarEntry> entries = new ArrayList<>();
         String[] labels = new String[7];
-        populateEntryAndLabel(taskId, entries, labels, graphType);
-        setGraph(entries, labels, getGoalHour(goal, goalType)[graphType], graphType);
+        populateEntryAndLabel(entries, labels, graphType);
+        setGraph(entries, labels, getGoalHour()[graphType], graphType);
     }
 
-    private int[] getGoalHour(int goal, int goalType) {
+    private int[] getGoalHour() {
+        int goal = taskItem.getGoal();
+        int goalType = taskItem.getGoalType();
         int[] goals = new int[3];
         if (goalType == Constants.DAILY_GOAL) {
             goals[Constants.DAILY_GOAL] = goal;
@@ -114,7 +124,7 @@ public class GraphTab extends Fragment {
         return goals;
     }
 
-    private void populateEntryAndLabel(int taskId, List<BarEntry> entries, String[] labels, int graphType) {
+    private void populateEntryAndLabel(List<BarEntry> entries, String[] labels, int graphType) {
 
         Calendar cal = Calendar.getInstance();
 
@@ -127,28 +137,26 @@ public class GraphTab extends Fragment {
     }
 
     private float getHourByGraphType(int graphType, Calendar cal) {
-        float ret = 0f;
         int currUnit = Calendar.DAY_OF_WEEK;
         if (graphType == Constants.WEEKLY_GRAPH) {
             currUnit = Calendar.WEEK_OF_YEAR;
         } else if (graphType == Constants.MONTHLY_GRAPH) {
             currUnit = Calendar.MONTH;
         }
-        int curr = cal.get(currUnit);
-        do {
-            ret += getDayHour(cal);
-            cal.add(Calendar.DAY_OF_WEEK, 1);
-        } while (cal.get(currUnit) == curr);
-        return ret;
+        String startDate = TimeUtils.DATE_FORMAT_AS_KEY.format(cal.getTime());
+        cal.add(currUnit, 1);
+        String endDate = TimeUtils.DATE_FORMAT_AS_KEY.format(cal.getTime());
+        return getRangeHour(startDate, endDate);
     }
 
-    private float getDayHour(Calendar cal) {
-        Cursor cursor = db.queryHourByDate(taskId, cal);
-        cursor.moveToFirst();
-        if (cursor.getCount() > 0) {
-            return (Float) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR);
+    private float getRangeHour(String startDate, String endDate) {
+        float ret = 0f;
+        Cursor cursor = db.queryHourInRange(startDate, endDate, taskId);
+        while (cursor.moveToNext()) {
+            ret += (Float) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR);
         }
-        return 0f;
+        cursor.close();
+        return ret;
     }
 
     private int getCalendarUnit(int graphType) {
