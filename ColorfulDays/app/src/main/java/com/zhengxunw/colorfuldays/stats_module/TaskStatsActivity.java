@@ -99,8 +99,9 @@ public class TaskStatsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Cursor cursor = DatabaseHelper.getInstance(getApplicationContext()).getTaskById(taskItem.getId());
-        if (cursor.getCount() == 0) {
+        if (cursor.getCount() <= 0) {
             onBackPressed();
+            return;
         }
         cursor.moveToFirst();
         taskItem = DatabaseHelper.getTaskItem(cursor);

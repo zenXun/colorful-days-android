@@ -1,6 +1,7 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -16,8 +17,15 @@ import android.view.View;
 
 import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
 import com.zhengxunw.colorfuldays.commons.TaskSettingActivity;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
+import com.zhengxunw.colorfuldays.database.DatabaseHelper;
+import com.zhengxunw.colorfuldays.database.TaskItem;
+import com.zhengxunw.colorfuldays.database.TransactionItem;
 import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
 import com.zhengxunw.colorfuldays.today_module.HomeFragment;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -50,40 +58,35 @@ public class MainActivity extends AppCompatActivity {
         statsFrag = StatsFragment.newInstance();
         calendarFrag = CalendarFragment.newInstance();
 
-        // clear DB
 //        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
-//        db.addNewTask(new TaskItem(1, "Reading", 25.36f, Color.parseColor("#005DFF"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(2, "Workout", 30, Color.parseColor("#F78800"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(3, "Android", 28.08f, Color.parseColor("#FF2C00"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(4, "Guitar", 5.2f, Color.parseColor("#5A6754"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(5, "Finance", 20.92f, Color.parseColor("#C6005D"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(6, "Blockchain", 4.1f, Color.parseColor("#E69FC4"), TaskItem.IDLE));
-//        db.addNewTask(new TaskItem(7, "Data Engineer", 29.47f, Color.parseColor("#00E5CF"), TaskItem.IDLE));
-//
+//        DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
+//        db.addNewTask(new TaskItem(1, "Reading", 25.36f, Color.parseColor("#005DFF"), TaskItem.IDLE, 0, 0));
+//        db.addNewTask(new TaskItem(2, "Workout", 30, Color.parseColor("#F78800"), TaskItem.IDLE, 0, 0));
+//        db.addNewTask(new TaskItem(3, "Android", 28.08f, Color.parseColor("#FF2C00"), TaskItem.IDLE, 0, 0));
+//        db.addNewTask(new TaskItem(4, "Guitar", 5.2f, Color.parseColor("#5A6754"), TaskItem.IDLE, 0, 0));
+//        db.addNewTask(new TaskItem(5, "Finance", 20.92f, Color.parseColor("#C6005D"), TaskItem.IDLE, 0, 0));
+//        db.addNewTask(new TaskItem(6, "Blockchain", 4.1f, Color.parseColor("#E69FC4"), TaskItem.IDLE, 0, 0));
+//        db.addNewTask(new TaskItem(7, "Data Engineer", 29.47f, Color.parseColor("#00E5CF"), TaskItem.IDLE, 0, 0));
 //
 //        Calendar c = TimeUtils.getCurrentCalendar();
-//        c.set(2018, 2, 10, 0, 0);
-//        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLACK);
 //        c.set(2018, 2, 11, 0, 0);
-//        db.appendCalendarEntry(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), Color.BLUE);
-//        c.set(2018, 2, 11, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, 1);
+//        db.appendTransaction(new TransactionItem(1, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, "kasd"));
 //        c.set(2018, 2, 12, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 2, 2);
+//        db.appendTransaction(new TransactionItem(2,TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 2, "sdfads"));
 //        c.set(2018, 2, 13, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 3);
+//        db.appendTransaction(new TransactionItem(3,TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, "asdfas"));
 //        c.set(2018, 2, 14, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, 4);
+//        db.appendTransaction(new TransactionItem(4, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, "haha"));
 //        c.set(2018, 2, 15, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, 5);
+//        db.appendTransaction(new TransactionItem(5, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, "sladjl"));
 //        c.set(2018, 2, 16, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, 6);
+//        db.appendTransaction(new TransactionItem(1, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 6, "sdafsd"));
 //        c.set(2018, 2, 21, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 5, 0.5f);
+//        db.appendTransaction(new TransactionItem(5, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 0.5f, "Asf"));
 //        c.set(2018, 2, 21, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 4, 1);
+//        db.appendTransaction(new TransactionItem(4, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 1, "adsf"));
 //        c.set(2018, 2, 21, 0, 0);
-//        db.appendTransaction(TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 3, 2);
+//        db.appendTransaction(new TransactionItem(3, TimeUtils.DATE_FORMAT_AS_KEY.format(c.getTime()), 2, "asdf"));
 
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);

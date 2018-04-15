@@ -21,8 +21,6 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_T
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_DATE;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_NAME;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR;
-import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getCalendarTableCreationSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getRecordsByFieldsSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTaskTableCreationSQL;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTasksQueryByStateSQL;
@@ -34,7 +32,7 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTransacti
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     private static DatabaseHelper mInstance = null;
 
@@ -69,7 +67,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 return cursor.getInt(idx);
             case Cursor.FIELD_TYPE_FLOAT:
                 return cursor.getFloat(idx);
-            case Cursor.FIELD_TYPE_STRING:
         }
         return cursor.getString(idx);
     }
@@ -78,16 +75,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(getTaskTableCreationSQL());
         sqLiteDatabase.execSQL(getTransactionTableCreationSQL());
-        sqLiteDatabase.execSQL(getCalendarTableCreationSQL());
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // If you need to add a new column
-        if (newVersion > oldVersion && newVersion == 2) {
-            db.execSQL(String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", TASK_TABLE_NAME, TASK_TABLE_GOAL));
-            db.execSQL(String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", TASK_TABLE_NAME, TASK_TABLE_GOAL_TYPE));
-        }
+        db.execSQL("DROP TABLE IF EXISTS " + TRANSACTION_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TASK_TABLE_NAME);
+        onCreate(db);
     }
 
     public boolean addNewTask(TaskItem task) {
@@ -101,8 +95,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public boolean deleteTask(int taskId) {
         String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
-        return (db.delete(TASK_TABLE_NAME, where, null) != -1)
-                && (db.delete(TRANSACTION_TABLE_NAME, where, null) != -1);
+        int deleteFromTaskTableResult = db.delete(TASK_TABLE_NAME, where, null);
+        int deleteFromTransactionTableResult = db.delete(TRANSACTION_TABLE_NAME, where, null);
+        return (deleteFromTaskTableResult != -1) && (deleteFromTransactionTableResult != -1);
     }
 
     public boolean addTaskTime(int taskId, float timeAdded) {
@@ -161,12 +156,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * transaction table
      * */
-    public boolean appendTransaction(String date, int taskId, float hours) {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(TRANSACTION_TABLE_DATE, date);
-        contentValues.put(TASK_TABLE_TASK_ID, taskId);
-        contentValues.put(TRANSACTION_TABLE_TASK_HOUR, hours);
-        return db.insert(TRANSACTION_TABLE_NAME, null, contentValues) != -1;
+    public boolean appendTransaction(TransactionItem transactionItem) {
+        return db.insert(TRANSACTION_TABLE_NAME, null, transactionItem.toContentValues()) != -1;
     }
 
     public Cursor queryTransactionGroupByTaskByDate(String date) {

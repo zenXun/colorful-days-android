@@ -14,6 +14,7 @@ import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -25,6 +26,7 @@ import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
+import com.zhengxunw.colorfuldays.database.TransactionItem;
 
 import java.util.Date;
 import java.util.Locale;
@@ -272,13 +274,19 @@ public class HomeFragment extends Fragment {
     class taskOnTimeSetListener implements TimePickerDialog.OnTimeSetListener {
 
         TaskItem taskItem;
+        String taskNote;
 
         taskOnTimeSetListener(TaskItem taskItem) {
             this.taskItem = taskItem;
         }
 
+        public void setTaskNote(String note) {
+            taskNote = note;
+        }
+
         @Override
         public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+
             float timeAdded = hourOfDay + (float)minute / 60;
             int taskId = taskItem.getId();
             if (!taskItem.isIdle()) {
@@ -286,7 +294,7 @@ public class HomeFragment extends Fragment {
             }
             if (timeAdded > 0) {
                 db.addTaskTime(taskId, timeAdded);
-                db.appendTransaction(TimeUtils.getCurrentDateKey(), taskId, timeAdded);
+                db.appendTransaction(new TransactionItem(taskId, TimeUtils.getCurrentDateKey(), timeAdded, taskNote));
             }
             toastMsg(taskItem.getTaskName() + " " + String.format(locale, "%.02f", timeAdded) + " hours");
         }
@@ -337,15 +345,17 @@ public class HomeFragment extends Fragment {
     class myTimePickerDialog extends TimePickerDialog {
 
         TimePicker mTimePicker;
-        private OnTimeSetListener mTimeSetListener;
+        private taskOnTimeSetListener mTimeSetListener;
+        private EditText taskNote;
 
-        myTimePickerDialog(Context context, int themeResId, OnTimeSetListener listener, int hourOfDay, int minute,
-                           boolean is24HourView) {
+        myTimePickerDialog(Context context, int themeResId, taskOnTimeSetListener listener,
+                           int hourOfDay, int minute, boolean is24HourView) {
             super(context, themeResId, listener, hourOfDay, minute, is24HourView);
             final LayoutInflater inflater = LayoutInflater.from(context);
             mTimeSetListener = listener;
             final View view = inflater.inflate(R.layout.customized_time_picker, null);
             mTimePicker = view.findViewById(R.id.myTimePicker);
+            taskNote = view.findViewById(R.id.task_note);
             mTimePicker.setIs24HourView(is24HourView);
             mTimePicker.setCurrentHour(hourOfDay);
             mTimePicker.setCurrentMinute(minute);
@@ -366,6 +376,7 @@ public class HomeFragment extends Fragment {
                     // entry. This will only be invoked programmatically. User clicks on BUTTON_POSITIVE
                     // are handled in show().
                     if (mTimeSetListener != null) {
+                        mTimeSetListener.setTaskNote(taskNote.getText().toString());
                         mTimeSetListener.onTimeSet(mTimePicker, mTimePicker.getCurrentHour(),
                                 mTimePicker.getCurrentMinute());
                     }

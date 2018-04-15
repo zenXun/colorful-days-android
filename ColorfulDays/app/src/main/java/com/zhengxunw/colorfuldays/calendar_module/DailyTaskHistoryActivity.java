@@ -3,6 +3,8 @@ package com.zhengxunw.colorfuldays.calendar_module;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -18,6 +20,7 @@ import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.CustomizedColorUtils;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
+import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
@@ -76,8 +79,12 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
     }
 
     class todayTasksAdapter extends ArrayAdapter<TaskItem> {
+
+        private Context context;
+
         public todayTasksAdapter(Context context, ArrayList<TaskItem> tasks) {
             super(context, 0, tasks);
+            this.context = context;
         }
 
         @Override
@@ -92,16 +99,19 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             TextView taskTimesTV = convertView.findViewById(R.id.task_days_tv);
             TextView taskPartTV = (TextView) convertView.findViewById(R.id.task_name_part);
             TextView hourPartTV = (TextView) convertView.findViewById(R.id.task_hour_part);
+            ListView taskNotePart = convertView.findViewById(R.id.task_note_parts);
+            ArrayList<String> notes = new ArrayList<>();
 
             Cursor cursor = db.queryTransactionByDateAndTask(date, task.getId());
-            cursor.moveToFirst();
             int times = cursor.getCount();
+            while (cursor.moveToNext()) {
+                notes.add((String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_NOTE));
+            }
             cursor.close();
             // Populate the data into the template view using the data object
             taskPartTV.setText(task.getTaskName());
             hourPartTV.setText(TimeUtils.getDisplayHour(task.getTaskHour()));
             taskTimesTV.setText("Did " + times + " times");
-
 
             int bgColor = task.getColor();
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);
@@ -109,7 +119,32 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             taskPartTV.setTextColor(txtColor);
             hourPartTV.setTextColor(txtColor);
             convertView.setBackgroundColor(bgColor);
+            taskNotePart.setAdapter(new todayTaskNotesAdapter(this.context, notes, txtColor));
             // Return the completed view to render on screen
+            return convertView;
+        }
+    }
+
+    class todayTaskNotesAdapter extends ArrayAdapter<String> {
+
+        private Context context;
+        private int textColor;
+
+        public todayTaskNotesAdapter(Context context, ArrayList<String> notes, int textColor) {
+            super(context, 0, notes);
+            this.context = context;
+            this.textColor = textColor;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            String note = getItem(position);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(this.context).inflate(android.R.layout.simple_list_item_1, parent, false);
+            }
+            TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
+            tv.setText(note);
+            tv.setTextColor(textColor);
             return convertView;
         }
     }

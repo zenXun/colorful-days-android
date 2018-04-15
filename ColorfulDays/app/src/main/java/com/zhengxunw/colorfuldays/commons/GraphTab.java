@@ -72,8 +72,10 @@ public class GraphTab extends Fragment {
 
     private void updateTaskItem() {
         Cursor cursor = db.getTaskById(taskId);
-        cursor.moveToFirst();
-        taskItem = DatabaseHelper.getTaskItem(cursor);
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            taskItem = DatabaseHelper.getTaskItem(cursor);
+        }
     }
 
     @Override

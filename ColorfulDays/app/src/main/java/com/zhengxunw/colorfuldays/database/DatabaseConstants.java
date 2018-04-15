@@ -22,28 +22,15 @@ public class DatabaseConstants {
     public static final String TRANSACTION_TABLE_TASK_HOUR = "transaction_task_hour";
     public static final String TRANSACTION_TABLE_NOTE = "transaction_note";
 
-    public static final String CALENDAR_TABLE_NAME = "calendar_table";
-    public static final String CALENDAR_TABLE_DATE = "calendar_date";
-    public static final String CALENDAR_TABLE_COLOR = "color_code";
-
 
     static String getTaskTableCreationSQL() {
-        String template = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s FLOAT, %s INTEGER, %s INTEGER, %s FLOAT)";
-        return String.format(template, TASK_TABLE_NAME, TASK_TABLE_TASK_ID, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_HOUR, TASK_TABLE_IS_IDLE, TASK_TABLE_COLOR, TASK_TABLE_GOAL);
+        String template = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s FLOAT, %s INTEGER, %s INTEGER, %s INTEGER, %s INTEGER)";
+        return String.format(template, TASK_TABLE_NAME, TASK_TABLE_TASK_ID, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_HOUR, TASK_TABLE_IS_IDLE, TASK_TABLE_COLOR, TASK_TABLE_GOAL, TASK_TABLE_GOAL_TYPE);
     }
 
     static String getTransactionTableCreationSQL() {
-        String template = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s INTEGER, %s TEXT, %s FLOAT)";
-        return String.format(template, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_DATE, TRANSACTION_TABLE_TASK_HOUR);
-    }
-
-    static String getCalendarTableCreationSQL() {
-        String template = "CREATE TABLE %s (%s TEXT PRIMARY KEY, %s INTEGER)";
-        return String.format(template, CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE, CALENDAR_TABLE_COLOR);
-    }
-
-    static String getLastCalendarEntrySQL() {
-        return String.format("SELECT rowid _id, * FROM %s ORDER BY %s DESC LIMIT 1;", CALENDAR_TABLE_NAME, CALENDAR_TABLE_DATE);
+        String template = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s INTEGER, %s TEXT, %s FLOAT, %s TEXT DEFAULT '')";
+        return String.format(template, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_DATE, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NOTE);
     }
 
     static String getFirstTransactionSQL(int taskID) {

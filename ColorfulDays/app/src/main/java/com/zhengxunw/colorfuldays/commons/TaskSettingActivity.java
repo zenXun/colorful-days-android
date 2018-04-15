@@ -107,8 +107,9 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
         deleteTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Delete Task", Toast.LENGTH_SHORT).show();
-                db.deleteTask(taskId);
+                boolean deleteSuccess = db.deleteTask(taskId);
+                String message = deleteSuccess ? "Task was deleted successfully." : "Task wasn't deleted successfully.";
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
                 onBackPressed();
             }
         });
@@ -144,7 +145,7 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
                 String newTaskHourText = taskInitHourEV.getText().toString();
                 float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
                 String goalHourStr = goalHourEV.getText().toString();
-                int goalHour = goalHourStr == null || goalHourStr.isEmpty() ? 0 : Integer.valueOf(goalHourStr);
+                int goalHour = goalHourStr.isEmpty() ? 0 : Integer.valueOf(goalHourStr);
                 int goalType = goalFreqSpinner.getSelectedItemPosition();
 
                 if (newTaskName.isEmpty()) {
