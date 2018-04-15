@@ -129,20 +129,17 @@ public class GraphTab extends Fragment {
         Calendar cal = Calendar.getInstance();
 
         int calUnit = getCalendarUnit(graphType);
+        if (graphType == Constants.MONTHLY_GRAPH) {
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+        }
         cal.add(calUnit, -6);
         for (int i = 0; i < 7; i++) {
             labels[i] = TimeUtils.getLabel(cal, graphType);
-            entries.add(new BarEntry(i, getHourByGraphType(graphType, cal)));
+            entries.add(new BarEntry(i, getHourByGraphType(calUnit, cal)));
         }
     }
 
-    private float getHourByGraphType(int graphType, Calendar cal) {
-        int currUnit = Calendar.DAY_OF_WEEK;
-        if (graphType == Constants.WEEKLY_GRAPH) {
-            currUnit = Calendar.WEEK_OF_YEAR;
-        } else if (graphType == Constants.MONTHLY_GRAPH) {
-            currUnit = Calendar.MONTH;
-        }
+    private float getHourByGraphType(int currUnit, Calendar cal) {
         String startDate = TimeUtils.DATE_FORMAT_AS_KEY.format(cal.getTime());
         cal.add(currUnit, 1);
         String endDate = TimeUtils.DATE_FORMAT_AS_KEY.format(cal.getTime());
