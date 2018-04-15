@@ -13,6 +13,8 @@ public class DatabaseConstants {
     public static final String TASK_TABLE_TASK_HOUR = "task_total_hour";
     public static final String TASK_TABLE_IS_IDLE = "task_state";
     public static final String TASK_TABLE_COLOR = "task_color";
+    public static final String TASK_TABLE_GOAL = "task_goal";
+    public static final String TASK_TABLE_GOAL_TYPE = "task_goal_type";
 
     public static final String TRANSACTION_TABLE_NAME = "transaction_table";
     public static final String TRANSACTION_TABLE_ID = "transaction_id";
@@ -26,8 +28,8 @@ public class DatabaseConstants {
 
 
     static String getTaskTableCreationSQL() {
-        String template = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s FLOAT, %s INTEGER, %s INTEGER)";
-        return String.format(template, TASK_TABLE_NAME, TASK_TABLE_TASK_ID, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_HOUR, TASK_TABLE_IS_IDLE, TASK_TABLE_COLOR);
+        String template = "CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s FLOAT, %s INTEGER, %s INTEGER, %s FLOAT)";
+        return String.format(template, TASK_TABLE_NAME, TASK_TABLE_TASK_ID, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_HOUR, TASK_TABLE_IS_IDLE, TASK_TABLE_COLOR, TASK_TABLE_GOAL);
     }
 
     static String getTransactionTableCreationSQL() {
@@ -53,8 +55,8 @@ public class DatabaseConstants {
     }
 
     static String getTransactionsGroupByTaskOnDateSQL(String date) {
-        return String.format("SELECT t.%s AS %s, SUM(t.%s) AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s ",
-                TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE, TASK_TABLE_IS_IDLE)
+        return String.format("SELECT t.%s AS %s, SUM(t.%s) AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s, tt.%s AS %s ",
+                TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID, TRANSACTION_TABLE_TASK_HOUR, TASK_TABLE_TASK_HOUR, TASK_TABLE_TASK_NAME, TASK_TABLE_TASK_NAME, TASK_TABLE_COLOR, TASK_TABLE_COLOR, TASK_TABLE_IS_IDLE, TASK_TABLE_IS_IDLE, TASK_TABLE_GOAL, TASK_TABLE_GOAL, TASK_TABLE_GOAL_TYPE, TASK_TABLE_GOAL_TYPE)
                 + String.format("FROM %s t ", TRANSACTION_TABLE_NAME)
                 + String.format("INNER JOIN (SELECT * FROM %s) tt ", TASK_TABLE_NAME)
                 + String.format("ON t.%s = tt.%s ", TASK_TABLE_TASK_ID, TASK_TABLE_TASK_ID)
@@ -102,14 +104,9 @@ public class DatabaseConstants {
         return populatePairsIntoQuery(builder, pairs).toString();
     }
 
-    static String getHoursByDateSQL(String date, int taskId) {
+    static String getHoursByGraphTypeSQL(String date, int taskId) {
         return String.format("SELECT rowid _id, SUM(%s) AS %s FROM %s WHERE %s='%s' AND %s='%s' GROUP BY %s",
                 TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_DATE, date, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
-    }
-
-    static String getHoursByWeekSQL(int month, int taskId) {
-        return String.format("SELECT strftime('%%m', %s) AS %s FROM %s WHERE strftime('%%m', %s)='%s' AND %s='%s' GROUP BY %s",
-                TASK_TABLE_TASK_HOUR, TASK_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TRANSACTION_TABLE_TASK_HOUR, getMonthFormat(month), TASK_TABLE_TASK_ID, taskId, TRANSACTION_TABLE_TASK_HOUR);
     }
 
     private static String getMonthFormat(int month) {

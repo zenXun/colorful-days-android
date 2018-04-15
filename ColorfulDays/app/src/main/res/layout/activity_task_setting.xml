@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/task_hour_tv_eg"
                 android:layout_weight="1"
-                android:inputType="numberDecimal"/>
+                android:inputType="number"/>
 
             <Spinner
                 android:id="@+id/goal_frequency"

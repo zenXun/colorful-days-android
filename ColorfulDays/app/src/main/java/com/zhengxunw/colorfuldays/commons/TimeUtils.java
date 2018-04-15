@@ -18,6 +18,8 @@ public class TimeUtils {
     public static final DateFormat DATE_FORMAT_HOME = new SimpleDateFormat("EEE, d MMM yyyy");
     public static final DateFormat DATE_FORMAT_AS_KEY = new SimpleDateFormat("dd-MMM-yyyy");
     public static final DateFormat DATE_FORMAT_CALENDAR_TITLE = new SimpleDateFormat("MMM yyyy");
+    public static final DateFormat MONTH_FORMAT = new SimpleDateFormat("MMM");
+    public static final DateFormat WEEK_FORMAT = new SimpleDateFormat("dd-MMM");
 
     public static String getWeekday(Calendar calendar) {
         DateFormat weekdayFormat = new SimpleDateFormat("E");
@@ -27,8 +29,10 @@ public class TimeUtils {
     public static String getLabel(Calendar calendar, int graphType) {
         if (graphType == Constants.DAILY_GRAPH) {
             return getWeekday(calendar);
+        } else if (graphType == Constants.WEEKLY_GRAPH) {
+            return WEEK_FORMAT.format(calendar.getTime());
         }
-        return null;
+        return MONTH_FORMAT.format(calendar.getTime());
     }
 
     public static Date getTodayDate() {

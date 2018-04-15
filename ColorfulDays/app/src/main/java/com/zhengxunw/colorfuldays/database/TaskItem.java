@@ -25,19 +25,21 @@ public class TaskItem implements Parcelable {
     private float taskHour;
     private int state;
     private int color;
-    private float goal;
-    private float goalType;
+    private int goal;
+    private int goalType;
 
     public TaskItem() {
 
     }
 
-    public TaskItem(int id, String taskName, float taskHour, int color, int state) {
+    public TaskItem(int id, String taskName, float taskHour, int color, int state, int goal, int goalType) {
         this.id = id;
         this.taskName = taskName;
         this.taskHour = taskHour;
         this.state = state;
         this.color = color;
+        this.goal = goal;
+        this.goalType = goalType;
     }
 
     @Override
@@ -48,6 +50,22 @@ public class TaskItem implements Parcelable {
     @Override
     public boolean equals(Object obj) {
         return id == ((TaskItem) obj).getId();
+    }
+
+    public int getGoal() {
+        return goal;
+    }
+
+    public int getGoalType() {
+        return goalType;
+    }
+
+    public void setGoal(int goal) {
+        this.goal = goal;
+    }
+
+    public void setGoalType(int goalType) {
+        this.goalType = goalType;
     }
 
     public String getTaskName() {
@@ -96,6 +114,8 @@ public class TaskItem implements Parcelable {
         contentValues.put(DatabaseConstants.TASK_TABLE_TASK_HOUR, taskHour);
         contentValues.put(DatabaseConstants.TASK_TABLE_IS_IDLE, state);
         contentValues.put(DatabaseConstants.TASK_TABLE_COLOR, color);
+        contentValues.put(DatabaseConstants.TASK_TABLE_GOAL, goal);
+        contentValues.put(DatabaseConstants.TASK_TABLE_GOAL_TYPE, goalType);
         return contentValues;
     }
 
@@ -105,7 +125,8 @@ public class TaskItem implements Parcelable {
         taskHour = in.readFloat();
         state = in.readInt();
         color = in.readInt();
-        goal = in.readFloat();
+        goal = in.readInt();
+        goalType = in.readInt();
     }
 
     @Override
@@ -120,7 +141,8 @@ public class TaskItem implements Parcelable {
         dest.writeFloat(taskHour);
         dest.writeInt(state);
         dest.writeInt(color);
-        dest.writeFloat(goal);
+        dest.writeInt(goal);
+        dest.writeInt(goalType);
     }
 
     @SuppressWarnings("unused")

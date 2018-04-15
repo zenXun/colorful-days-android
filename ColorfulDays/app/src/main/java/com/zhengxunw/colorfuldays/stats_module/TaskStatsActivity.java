@@ -57,8 +57,8 @@ public class TaskStatsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         graphTabs.addTab(graphTabs.newTab().setText("Daily"));
-//        graphTabs.addTab(graphTabs.newTab().setText("weekly"));
-//        graphTabs.addTab(graphTabs.newTab().setText("monthly"));
+        graphTabs.addTab(graphTabs.newTab().setText("Weekly"));
+        graphTabs.addTab(graphTabs.newTab().setText("Monthly"));
 
         viewPager.setAdapter(new GraphPagerAdapter(getSupportFragmentManager(), graphTabs.getTabCount()));
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -147,10 +147,10 @@ public class TaskStatsActivity extends AppCompatActivity {
             switch (position) {
                 case 0:
                     return GraphTab.newInstance(taskId, Constants.DAILY_GRAPH);
-//                case 1:
-//                    return GraphTab.newInstance(taskId, Constants.WEEKLY_GRAPH);
-//                case 2:
-//                    return GraphTab.newInstance(taskId, Constants.MONTHLY_GRAPH);
+                case 1:
+                    return GraphTab.newInstance(taskId, Constants.WEEKLY_GRAPH);
+                case 2:
+                    return GraphTab.newInstance(taskId, Constants.MONTHLY_GRAPH);
                 default:
                     return null;
             }

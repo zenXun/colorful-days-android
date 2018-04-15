@@ -6,13 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.TimeUtils;
 
 import java.util.Calendar;
 
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.DATABASE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_COLOR;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_GOAL;
+import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_GOAL_TYPE;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_IS_IDLE;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_NAME;
 import static com.zhengxunw.colorfuldays.database.DatabaseConstants.TASK_TABLE_TASK_HOUR;
@@ -33,12 +34,14 @@ import static com.zhengxunw.colorfuldays.database.DatabaseConstants.getTransacti
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    private static final int DATABASE_VERSION = 2;
+
     private static DatabaseHelper mInstance = null;
 
     private SQLiteDatabase db;
 
     private DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, 1);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
         db = this.getWritableDatabase();
     }
 
@@ -54,7 +57,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 (String) getFieldFromCursor(cursor, TASK_TABLE_TASK_NAME),
                 (Float) getFieldFromCursor(cursor, TASK_TABLE_TASK_HOUR),
                 (Integer) getFieldFromCursor(cursor, TASK_TABLE_COLOR),
-                (Integer) getFieldFromCursor(cursor, TASK_TABLE_IS_IDLE));
+                (Integer) getFieldFromCursor(cursor, TASK_TABLE_IS_IDLE),
+                (Integer) getFieldFromCursor(cursor, TASK_TABLE_GOAL),
+                (Integer) getFieldFromCursor(cursor, TASK_TABLE_GOAL_TYPE));
     }
 
     public static Object getFieldFromCursor(Cursor cursor, String fieldName) {
@@ -78,7 +83,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        // If you need to add a new column
+        if (newVersion > oldVersion && newVersion == 2) {
+            db.execSQL(String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", TASK_TABLE_NAME, TASK_TABLE_GOAL));
+            db.execSQL(String.format("ALTER TABLE %s ADD COLUMN %s INTEGER DEFAULT 0", TASK_TABLE_NAME, TASK_TABLE_GOAL_TYPE));
+        }
     }
 
     public boolean addNewTask(TaskItem task) {
@@ -101,16 +110,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(TASK_TABLE_TASK_HOUR, getTaskTimeByTaskId(taskId) + timeAdded);
         String where = String.format("%s='%s'", TASK_TABLE_TASK_ID, taskId);
         return db.update(TASK_TABLE_NAME, contentValues, where, null) != -1;
-    }
-
-    private Integer getTaskColorByTaskId(int taskId) {
-        Cursor taskCursor = db.rawQuery(DatabaseConstants.getRecordsByFieldsSQL(
-                TASK_TABLE_NAME,
-                new Pair(TASK_TABLE_TASK_ID, Integer.toString(taskId))), null);
-        taskCursor.moveToFirst();
-        int color = (Integer) getFieldFromCursor(taskCursor, TASK_TABLE_COLOR);
-        taskCursor.close();
-        return color;
     }
 
     private float getTaskTimeByTaskId(int taskId) {
@@ -190,20 +189,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(sql, null);
     }
 
-    public Cursor queryHourByGraphType(int graphType, int id, Calendar cal) {
-        switch (graphType) {
-            case Constants.DAILY_GRAPH:
-                return queryHourByDate(TimeUtils.getDateKey(cal.getTime()), id);
-            case Constants.WEEKLY_GRAPH:
-                return null;
-            case Constants.MONTHLY_GRAPH:
-                return null;
-        }
-        return null;
+    public Cursor queryHourByDate(int id, Calendar cal) {
+        return queryHourByDate(TimeUtils.getDateKey(cal.getTime()), id);
     }
 
     private Cursor queryHourByDate(String date, int id) {
-        return db.rawQuery(DatabaseConstants.getHoursByDateSQL(date, id), null);
+        return db.rawQuery(DatabaseConstants.getHoursByGraphTypeSQL(date, id), null);
     }
 
 }

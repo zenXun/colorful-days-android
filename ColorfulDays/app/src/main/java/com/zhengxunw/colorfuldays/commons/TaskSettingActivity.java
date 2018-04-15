@@ -29,10 +29,11 @@ import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITE
 
 public class TaskSettingActivity extends AppCompatActivity implements ColorPickerDialogListener {
 
-    @BindView(R.id.edit_task_name) EditText mEditTaskName;
-    @BindView(R.id.edit_task_init_hour) EditText mEditTaskInitHour;
+    @BindView(R.id.edit_task_name) EditText taskNameEV;
+    @BindView(R.id.edit_task_init_hour) EditText taskInitHourEV;
     @BindView(R.id.btn_color_setting) Button colorSettingBtn;
     @BindView(R.id.btn_delete_task) Button deleteTaskBtn;
+    @BindView(R.id.task_goal_ev) EditText goalHourEV;
     @BindView(R.id.goal_frequency) Spinner goalFreqSpinner;
     @BindView(R.id.toolbar) Toolbar toolbar;
     private TaskItem taskItem;
@@ -87,8 +88,8 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
         deleteTaskBtn.setClickable(false);
         taskItem = new TaskItem();
 
-        mEditTaskName.setText("");
-        mEditTaskInitHour.setText("0");
+        taskNameEV.setText("");
+        taskInitHourEV.setText("0");
         colorSettingBtn.setBackgroundColor(Color.WHITE);
     }
 
@@ -96,8 +97,10 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
         TextView hourTV = findViewById(R.id.task_hour_tv);
         hourTV.setText(R.string.existing_task_hour_tv_hint);
 
-        mEditTaskName.setText(taskItem.getTaskName());
-        mEditTaskInitHour.setText(String.valueOf(taskItem.getTaskHour()));
+        taskNameEV.setText(taskItem.getTaskName());
+        taskInitHourEV.setText(String.valueOf(taskItem.getTaskHour()));
+        goalHourEV.setText(String.valueOf(taskItem.getGoal()));
+        goalFreqSpinner.setSelection(taskItem.getGoalType());
         colorSettingBtn.setBackgroundColor(taskItem.getColor());
 
         final int taskId = taskItem.getId();
@@ -137,9 +140,12 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_task_action:
-                String newTaskName = mEditTaskName.getText().toString();
-                String newTaskHourText = mEditTaskInitHour.getText().toString();
+                String newTaskName = taskNameEV.getText().toString();
+                String newTaskHourText = taskInitHourEV.getText().toString();
                 float newTaskHour = newTaskHourText.isEmpty() ? 0 : Float.parseFloat(newTaskHourText);
+                String goalHourStr = goalHourEV.getText().toString();
+                int goalHour = goalHourStr == null || goalHourStr.isEmpty() ? 0 : Integer.valueOf(goalHourStr);
+                int goalType = goalFreqSpinner.getSelectedItemPosition();
 
                 if (newTaskName.isEmpty()) {
                     Toast.makeText(context, R.string.empty_task_name_msg, Toast.LENGTH_SHORT).show();
@@ -149,11 +155,13 @@ public class TaskSettingActivity extends AppCompatActivity implements ColorPicke
                 if (!isNewTask) {
                     taskItem.setTaskName(newTaskName);
                     taskItem.setTaskHour(newTaskHour);
+                    taskItem.setGoal(goalHour);
+                    taskItem.setGoalType(goalType);
                     db.updateTask(taskItem);
                     break;
                 }
 
-                TaskItem newTask = new TaskItem(taskItem.getId(), newTaskName, newTaskHour, taskItem.getColor(), TaskItem.IDLE);
+                TaskItem newTask = new TaskItem(taskItem.getId(), newTaskName, newTaskHour, taskItem.getColor(), TaskItem.IDLE, goalHour, goalType);
                 if (db.addNewTask(newTask)) {
                     Toast.makeText(context, R.string.add_task_success, Toast.LENGTH_SHORT).show();
                 } else {
