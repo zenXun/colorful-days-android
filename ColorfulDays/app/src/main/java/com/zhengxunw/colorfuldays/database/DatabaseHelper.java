@@ -131,10 +131,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public String getFirstTransactionDate(int taskId) {
         Cursor cursor = db.rawQuery(DatabaseConstants.getFirstTransactionSQL(taskId), null);
-        cursor.moveToFirst();
         if (cursor.getCount() == 0) {
             return null;
         }
+        cursor.moveToFirst();
         String ret = (String) getFieldFromCursor(cursor, TRANSACTION_TABLE_DATE);
         cursor.close();
         return ret;
@@ -193,6 +193,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor queryHourInRange(String startDate, String endDate, int id) {
         return db.rawQuery(DatabaseConstants.getTaskHoursOnDateRange(startDate, endDate, id), null);
+    }
+
+    public Cursor queryTaskTotalHours(int id) {
+        return db.rawQuery(DatabaseConstants.getTaskTotalTransactionHours(id), null);
     }
 
 }

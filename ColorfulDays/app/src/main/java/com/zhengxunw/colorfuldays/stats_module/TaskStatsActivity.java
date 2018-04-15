@@ -52,7 +52,6 @@ public class TaskStatsActivity extends AppCompatActivity {
     @BindView(R.id.stats_task_note) ListView taskNotesLV;
     private DatabaseHelper db;
     private TaskItem taskItem;
-    private String startDate;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,7 +62,6 @@ public class TaskStatsActivity extends AppCompatActivity {
         db = DatabaseHelper.getInstance(getApplicationContext());
 
         taskItem = getIntent().getParcelableExtra(INTENT_EXTRA_TASK_ITEM);
-        startDate = getIntent().getStringExtra(INTENT_EXTRA_START_DATE);
         StatsUtils.populateStatsRow(taskItem, findViewById(R.id.task_info_row));
         populateStatsPart();
         populateNotePart();
@@ -112,11 +110,25 @@ public class TaskStatsActivity extends AppCompatActivity {
     }
 
     private void populateStatsPart() {
-        Cursor cursor = db.queryUniqueTransactionsDate(taskItem.getId());
+        int id = taskItem.getId();
+
+        Cursor cursor = db.queryUniqueTransactionsDate(id);
         int totalDays = cursor.getCount();
-        taskStartDaysTV.setText((startDate == null ? "Haven't started yet." : "Started from:\n" + startDate));
+        cursor.close();
+
+        float totalHours = 0f;
+        Cursor totalHourCursor = db.queryTaskTotalHours(id);
+        totalHourCursor.moveToFirst();
+        int idx = totalHourCursor.getColumnIndex(DatabaseConstants.TRANSACTION_TABLE_TASK_HOUR);
+        if (totalHourCursor.getCount() > 0 && idx >= 0) {
+            totalHours = totalHourCursor.getFloat(idx);
+        }
+        totalHourCursor.close();
+
+        String firstDate = db.getFirstTransactionDate(id);
+        taskStartDaysTV.setText((firstDate == null ? "Haven't started yet." : "Started from:\n" + firstDate));
         totalDaysTV.setText("Days insisted:\n" + totalDays);
-        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : taskItem.getTaskHour() / totalDays));
+        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : totalHours / totalDays));
     }
 
     private void populateNotePart() {

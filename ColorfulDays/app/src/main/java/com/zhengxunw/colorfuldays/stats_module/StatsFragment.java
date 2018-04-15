@@ -10,14 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.zhengxunw.colorfuldays.R;
 import com.zhengxunw.colorfuldays.commons.StatsUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
-import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_START_DATE;
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
 
 public class StatsFragment extends Fragment {
@@ -111,32 +109,18 @@ public class StatsFragment extends Fragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            return LayoutInflater.from(context).inflate(R.layout.stats_task_row, viewGroup, false);
+            return LayoutInflater.from(context).inflate(R.layout.stats_task_and_hour, viewGroup, false);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-
             final TaskItem taskItem = DatabaseHelper.getTaskItem(cursor);
             StatsUtils.populateStatsRow(taskItem, view);
-            TextView startDateTV = view.findViewById(R.id.task_start_date_tv);
-            TextView lastingDaysTV = view.findViewById(R.id.task_days_tv);
-            int taskId = taskItem.getId();
-            int insistedDays = 0;
-            String firstDate = db.getFirstTransactionDate(taskId);
-            if (firstDate != null) {
-                startDateTV.setText("Started from: " + firstDate);
-                insistedDays = db.getUniqueTransactionsDays(taskId);
-                if (insistedDays > 0) {
-                    lastingDaysTV.setText("Insisted for " + insistedDays + " days");
-                }
-            }
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getContext(), TaskStatsActivity.class);
                     intent.putExtra(INTENT_EXTRA_TASK_ITEM, taskItem);
-                    intent.putExtra(INTENT_EXTRA_START_DATE, firstDate);
                     startActivity(intent);
                 }
             });

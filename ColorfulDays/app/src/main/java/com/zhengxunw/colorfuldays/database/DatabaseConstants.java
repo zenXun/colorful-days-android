@@ -101,4 +101,9 @@ public class DatabaseConstants {
                 TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskId, TRANSACTION_TABLE_DATE, startDate, TRANSACTION_TABLE_DATE, endDate, TASK_TABLE_TASK_ID);
     }
 
+    static String getTaskTotalTransactionHours(int taskId) {
+        return String.format("SELECT rowid _id, SUM(%s) AS %s FROM %s WHERE %s='%s' GROUP BY %s",
+                TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_TASK_HOUR, TRANSACTION_TABLE_NAME, TASK_TABLE_TASK_ID, taskId, TASK_TABLE_TASK_ID);
+    }
+
 }
