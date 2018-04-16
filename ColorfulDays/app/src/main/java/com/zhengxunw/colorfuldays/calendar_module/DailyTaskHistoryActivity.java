@@ -8,8 +8,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -97,20 +99,25 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             TextView taskTimesTV = convertView.findViewById(R.id.task_days_tv);
             TextView taskPartTV = convertView.findViewById(R.id.task_name_part);
             TextView hourPartTV = convertView.findViewById(R.id.task_hour_part);
-            ListView taskNotePart = convertView.findViewById(R.id.task_note_parts);
-            ArrayList<String> notes = new ArrayList<>();
+            LinearLayout taskNotePart = convertView.findViewById(R.id.task_note_parts);
+
+            int bgColor = task.getColor();
+            int txtColor = CustomizedColorUtils.getTextColor(bgColor);
 
             Cursor cursor = db.queryTransactionByDateAndTask(date, task.getId());
             int times = cursor.getCount();
             while (cursor.moveToNext()) {
-                notes.add((String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_NOTE));
+                String note = (String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_NOTE);
+                if (note.isEmpty()) {
+                    continue;
+                }
+                View noteView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
+                TextView tv = noteView.findViewById(android.R.id.text1);
+                tv.setText(note);
+                tv.setTextColor(txtColor);
+                taskNotePart.addView(noteView);
             }
             cursor.close();
-            int bgColor = task.getColor();
-            int txtColor = CustomizedColorUtils.getTextColor(bgColor);
-            todayTaskNotesAdapter notesAdapter = new todayTaskNotesAdapter(getContext(), notes, txtColor);
-            taskNotePart.setAdapter(notesAdapter);
-            adjustNoteListHeight(notesAdapter, taskNotePart);
 
             // Populate the data into the template view using the data object
             taskPartTV.setText(task.getTaskName());
@@ -121,41 +128,6 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             hourPartTV.setTextColor(txtColor);
             convertView.setBackgroundColor(bgColor);
             // Return the completed view to render on screen
-            return convertView;
-        }
-    }
-
-    private void adjustNoteListHeight(todayTaskNotesAdapter notesAdapter, ListView taskNotePart) {
-        int totalHeight = 0;
-        for (int i = 0; i < notesAdapter.getCount(); i++) {
-            View listItem = notesAdapter.getView(i, null, taskNotePart);
-            listItem.measure(0, 0);
-            totalHeight += listItem.getMeasuredHeight();
-        }
-        ViewGroup.LayoutParams params = taskNotePart.getLayoutParams();
-        params.height = totalHeight + (taskNotePart.getDividerHeight() * (notesAdapter.getCount() - 1));
-        taskNotePart.setLayoutParams(params);
-        taskNotePart.requestLayout();
-    }
-
-    class todayTaskNotesAdapter extends ArrayAdapter<String> {
-
-        private int textColor;
-
-        public todayTaskNotesAdapter(Context context, ArrayList<String> notes, int textColor) {
-            super(context, 0, notes);
-            this.textColor = textColor;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            String note = getItem(position);
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
-            }
-            TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
-            tv.setText(note);
-            tv.setTextColor(textColor);
             return convertView;
         }
     }
