@@ -3,6 +3,7 @@ package com.zhengxunw.colorfuldays;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +27,10 @@ import com.zhengxunw.colorfuldays.database.TransactionItem;
 import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
 import com.zhengxunw.colorfuldays.today_module.HomeFragment;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
@@ -58,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
         statsFrag = StatsFragment.newInstance();
         calendarFrag = CalendarFragment.newInstance();
 
+//        backupDB();
+//        restoreDB();
 //        getApplicationContext().deleteDatabase(DatabaseConstants.DATABASE_NAME);
 //        DatabaseHelper db = DatabaseHelper.getInstance(getApplicationContext());
 //        db.addNewTask(new TaskItem(1, "Reading", 25.36f, Color.parseColor("#005DFF"), TaskItem.IDLE, 0, 0));
@@ -141,6 +149,53 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+    }
+
+    private void backupDB() {
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            if (sd.canWrite()) {
+                String currentDBPath = String.format("//data//%s//databases//%s", "com.zhengxunw.colorfuldays", DatabaseConstants.DATABASE_NAME);
+                String backupDBPath = DatabaseConstants.DATABASE_NAME;
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(sd, backupDBPath);
+
+                if (currentDB.exists()) {
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+                }
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    private void restoreDB() {
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            if (sd.canWrite()) {
+                String currentDBPath = String.format("//data//%s//databases//%s", "com.zhengxunw.colorfuldays", DatabaseConstants.DATABASE_NAME);
+                String backupDBPath = DatabaseConstants.DATABASE_NAME;
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(sd, backupDBPath);
+
+                if (backupDB.exists()) {
+                    FileChannel src = new FileInputStream(backupDB).getChannel();
+                    FileChannel dst = new FileOutputStream(currentDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+                }
+            }
+        } catch (Exception e) {
+            Log.e("s", "restoreDB: " + e.getMessage());
+        }
     }
 
     @Override
