@@ -2,6 +2,7 @@ package com.zhengxunw.colorfuldays.calendar_module;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -26,19 +27,21 @@ import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by wukey on 3/28/18.
  */
 
 public class DailyTaskHistoryActivity extends AppCompatActivity {
 
-    String date;
     private DatabaseHelper db;
+    private String date;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         Slidr.attach(this, Constants.slidrConfig);
         Context context = getApplicationContext();
         db = DatabaseHelper.getInstance(context);
@@ -58,16 +61,22 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        float totalHour = 0;
         ListView todayTasks = findViewById(R.id.today_tasks);
         ArrayList<TaskItem> tasks = new ArrayList<>();
         Cursor transCursor = db.queryTransactionGroupByTaskByDate(date);
         transCursor.moveToFirst();
         do {
             if (transCursor.getCount() > 0) {
-                tasks.add(DatabaseHelper.getTaskItem(transCursor));
+                TaskItem taskItem = DatabaseHelper.getTaskItem(transCursor);
+                totalHour += taskItem.getTaskHour();
+                tasks.add(taskItem);
             }
         } while (transCursor.moveToNext());
         todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
+        TextView totalHourTv = findViewById(R.id.total_hour_tv);
+        totalHourTv.setText(TimeUtils.getDisplayHour(totalHour));
+        totalHourTv.setTextColor(Color.BLACK);
     }
 
     @Override
@@ -100,6 +109,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
             TextView taskPartTV = convertView.findViewById(R.id.task_name_part);
             TextView hourPartTV = convertView.findViewById(R.id.task_hour_part);
             LinearLayout taskNotePart = convertView.findViewById(R.id.task_note_parts);
+            taskNotePart.removeAllViews();
 
             int bgColor = task.getColor();
             int txtColor = CustomizedColorUtils.getTextColor(bgColor);

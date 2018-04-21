@@ -59,6 +59,16 @@ public class TimeUtils {
         return String.format(Locale.US, "%d:%02d", minutes, seconds);
     }
 
+    public static String getWeekDay(String dateKey) {
+        Calendar cal = Calendar.getInstance();
+        try {
+            cal.setTime(DATE_FORMAT_AS_KEY.parse(dateKey));
+            return new SimpleDateFormat("EE").format(cal.getTime());
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     public static String getDisplayHour(float hour) {
         return String.format(Locale.US, "%.02f", hour) + "\n hours";
     }

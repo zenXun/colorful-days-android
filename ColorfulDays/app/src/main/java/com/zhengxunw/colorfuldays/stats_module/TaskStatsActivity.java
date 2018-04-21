@@ -27,17 +27,21 @@ import com.zhengxunw.colorfuldays.commons.Constants;
 import com.zhengxunw.colorfuldays.commons.GraphTab;
 import com.zhengxunw.colorfuldays.commons.StatsUtils;
 import com.zhengxunw.colorfuldays.commons.TaskSettingActivity;
+import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
 import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_START_DATE;
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
+import static com.zhengxunw.colorfuldays.commons.TimeUtils.DATE_FORMAT_AS_KEY;
+import static com.zhengxunw.colorfuldays.commons.TimeUtils.getWeekDay;
 
 public class TaskStatsActivity extends AppCompatActivity {
 
@@ -128,7 +132,7 @@ public class TaskStatsActivity extends AppCompatActivity {
         String firstDate = db.getFirstTransactionDate(id);
         taskStartDaysTV.setText((firstDate == null ? "Haven't started yet." : "Started from:\n" + firstDate));
         totalDaysTV.setText("Days insisted:\n" + totalDays);
-        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : totalHours / totalDays));
+        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : TimeUtils.getDisplayHour(totalHours / totalDays)));
     }
 
     private void populateNotePart() {
@@ -144,14 +148,14 @@ public class TaskStatsActivity extends AppCompatActivity {
             String date = (String) DatabaseHelper.getFieldFromCursor(cursor, DatabaseConstants.TRANSACTION_TABLE_DATE);
             if (currDate == null) {
                 currDate = date;
-                sb.append(date + "\n" + note);
+                sb.append(date + " " + getWeekDay(date) + "\n" + note);
             } else if (currDate.equals(date)) {
                 sb.append("\n" + note);
             } else {
                 currDate = date;
                 notes.add(sb.toString());
                 sb = new StringBuilder();
-                sb.append(date + "\n" + note);
+                sb.append(date + " " + getWeekDay(date) + "\n" + note);
             }
         }
         if (sb.length() > 0) {

@@ -131,6 +131,8 @@ public class GraphTab extends Fragment {
         int calUnit = getCalendarUnit(graphType);
         if (graphType == Constants.MONTHLY_GRAPH) {
             cal.set(Calendar.DAY_OF_MONTH, 1);
+        } else if (graphType == Constants.WEEKLY_GRAPH) {
+            cal.set(Calendar.DAY_OF_WEEK, 1);
         }
         cal.add(calUnit, -6);
         for (int i = 0; i < 7; i++) {
