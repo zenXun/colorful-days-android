@@ -33,14 +33,11 @@ import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_START_DATE;
 import static com.zhengxunw.colorfuldays.commons.Constants.INTENT_EXTRA_TASK_ITEM;
-import static com.zhengxunw.colorfuldays.commons.TimeUtils.DATE_FORMAT_AS_KEY;
 import static com.zhengxunw.colorfuldays.commons.TimeUtils.getWeekDay;
 
 public class TaskStatsActivity extends AppCompatActivity {
@@ -132,7 +129,7 @@ public class TaskStatsActivity extends AppCompatActivity {
         String firstDate = db.getFirstTransactionDate(id);
         taskStartDaysTV.setText((firstDate == null ? "Haven't started yet." : "Started from:\n" + firstDate));
         totalDaysTV.setText("Days insisted:\n" + totalDays);
-        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : TimeUtils.getDisplayHour(totalHours / totalDays)));
+        dailyAvgTV.setText("Daily average is:\n" + (totalDays == 0 ? 0 : TimeUtils.getDisplayHourVertical(totalHours / totalDays)));
     }
 
     private void populateNotePart() {

@@ -4,7 +4,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.zhengxunw.colorfuldays.R;
-import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 public class StatsUtils {
@@ -17,7 +16,7 @@ public class StatsUtils {
         TextView hourTV = view.findViewById(R.id.task_hour_part);
         taskTV.setText(taskItem.getTaskName());
         float taskHour = taskItem.getTaskHour();
-        hourTV.setText(TimeUtils.getDisplayHour(taskHour));
+        hourTV.setText(TimeUtils.getDisplayHourVertical(taskHour));
         hourTV.setTextColor(txtColor);
         hourTV.setBackgroundColor(bgColor);
         stripTV.setBackgroundColor(bgColor);

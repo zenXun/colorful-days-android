@@ -69,8 +69,12 @@ public class TimeUtils {
         }
     }
 
-    public static String getDisplayHour(float hour) {
+    public static String getDisplayHourVertical(float hour) {
         return String.format(Locale.US, "%.02f", hour) + "\n hours";
+    }
+
+    public static String getDisplayHourHorizontal(float hour) {
+        return String.format(Locale.US, "%.02f", hour) + " hours";
     }
 
     public static float millisToHour(long duration) {

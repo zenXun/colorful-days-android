@@ -9,7 +9,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -26,9 +25,6 @@ import com.zhengxunw.colorfuldays.database.DatabaseHelper;
 import com.zhengxunw.colorfuldays.database.TaskItem;
 
 import java.util.ArrayList;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by wukey on 3/28/18.
@@ -75,7 +71,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
         } while (transCursor.moveToNext());
         todayTasks.setAdapter(new todayTasksAdapter(getApplicationContext(), tasks));
         TextView totalHourTv = findViewById(R.id.total_hour_tv);
-        totalHourTv.setText(TimeUtils.getDisplayHour(totalHour));
+        totalHourTv.setText(TimeUtils.getDisplayHourHorizontal(totalHour));
         totalHourTv.setTextColor(Color.BLACK);
     }
 
@@ -131,7 +127,7 @@ public class DailyTaskHistoryActivity extends AppCompatActivity {
 
             // Populate the data into the template view using the data object
             taskPartTV.setText(task.getTaskName());
-            hourPartTV.setText(TimeUtils.getDisplayHour(task.getTaskHour()));
+            hourPartTV.setText(TimeUtils.getDisplayHourVertical(task.getTaskHour()));
             taskTimesTV.setText("Did " + times + " times");
             taskTimesTV.setTextColor(txtColor);
             taskPartTV.setTextColor(txtColor);
