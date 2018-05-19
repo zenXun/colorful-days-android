@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:background="@color/background_material_light"
-    tools:context="com.zhengxunw.colorfuldays.calendar_module.DailyTaskHistoryActivity">
+    tools:context="com.zhengxunw.colorfuldays.calendar.DailyTaskHistoryActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

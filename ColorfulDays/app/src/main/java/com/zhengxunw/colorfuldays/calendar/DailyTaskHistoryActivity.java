@@ -1,4 +1,4 @@
-package com.zhengxunw.colorfuldays.calendar_module;
+package com.zhengxunw.colorfuldays.calendar;
 
 import android.content.Context;
 import android.database.Cursor;

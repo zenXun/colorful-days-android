@@ -1,4 +1,4 @@
-package com.zhengxunw.colorfuldays.stats_module;
+package com.zhengxunw.colorfuldays.stats;
 
 import android.content.Context;
 import android.content.Intent;

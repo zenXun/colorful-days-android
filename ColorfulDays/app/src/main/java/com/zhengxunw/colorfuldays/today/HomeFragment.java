@@ -1,10 +1,11 @@
-package com.zhengxunw.colorfuldays.today_module;
+package com.zhengxunw.colorfuldays.today;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -193,8 +194,8 @@ public class HomeFragment extends Fragment {
             Log.d(TAG, "bindView: idle task on HomeFragment");
             TaskItem taskItem = DatabaseHelper.getTaskItem(cursor);
             // listeners setup
-            view.setOnClickListener(new idleTaskOnClickListener(taskItem));
-            view.setOnLongClickListener(new idleTaskOnLongClickListener(new DragContext(view, taskItem)));
+            view.setOnClickListener(new IdleTaskOnClickListener(taskItem));
+            view.setOnLongClickListener(new IdleTaskOnLongClickListener(new DragContext(view, taskItem)));
             view.setOnDragListener(taskDropListener);
 
             // text population and color setting
@@ -231,7 +232,7 @@ public class HomeFragment extends Fragment {
             if (homeContext.isTaskRunning(taskId)) {
                 runnable = homeContext.getRunningTask(taskId);
             } else {
-                runnable = new displayTimerOnView(taskId, homeContext);
+                runnable = new DisplayTimerOnView(taskId, homeContext);
                 homeContext.putRunningTask(taskId, runnable);
             }
             homeContext.startRunningTask(runnable);
@@ -239,7 +240,7 @@ public class HomeFragment extends Fragment {
                 homeContext.putTaskStartTime(taskId, System.currentTimeMillis());
             }
 
-            view.setOnClickListener(new workingTaskOnClickListener(taskItem));
+            view.setOnClickListener(new WorkingTaskOnClickListener(taskItem));
 
             // color setting
             int bgColor = taskItem.getColor();
@@ -271,12 +272,12 @@ public class HomeFragment extends Fragment {
         notifyAdapters();
     }
 
-    class taskOnTimeSetListener implements TimePickerDialog.OnTimeSetListener {
+    class TaskOnTimeSetListener implements TimePickerDialog.OnTimeSetListener {
 
         TaskItem taskItem;
         String taskNote;
 
-        taskOnTimeSetListener(TaskItem taskItem) {
+        TaskOnTimeSetListener(TaskItem taskItem) {
             this.taskItem = taskItem;
         }
 
@@ -300,13 +301,19 @@ public class HomeFragment extends Fragment {
                 toastMsg("Time is 0. Task wasn't added.");
             }
         }
+
+        public void abortTask() {
+            if (!taskItem.isIdle()) {
+                switchTaskStateToIdle(taskItem.getId());
+            }
+        }
     }
 
-    class idleTaskOnLongClickListener implements View.OnLongClickListener {
+    class IdleTaskOnLongClickListener implements View.OnLongClickListener {
 
         DragContext dragContext;
 
-        idleTaskOnLongClickListener(DragContext dragContext) {
+        IdleTaskOnLongClickListener(DragContext dragContext) {
             this.dragContext = dragContext;
         }
 
@@ -327,42 +334,43 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    class idleTaskOnClickListener implements View.OnClickListener {
+    class IdleTaskOnClickListener implements View.OnClickListener {
 
         TaskItem taskItem;
 
-        idleTaskOnClickListener(TaskItem taskItem) {
+        IdleTaskOnClickListener(TaskItem taskItem) {
             this.taskItem = taskItem;
         }
 
         @Override
         public void onClick(View view) {
-            TimePickerDialog timePickerDialog = new myTimePickerDialog(getContext(), R.style.HoloDialog,
-                    new taskOnTimeSetListener(taskItem), 0, 0, true);
+            TimePickerDialog timePickerDialog =
+                    new CustomizedTimePickerDialog(getContext(), R.style.HoloDialog,
+                            new TaskOnTimeSetListener(taskItem), 0, 0, true);
             timePickerDialog.setTitle(taskItem.getTaskName());
             timePickerDialog.show();
         }
     }
 
-    class myTimePickerDialog extends TimePickerDialog {
+    class CustomizedTimePickerDialog extends TimePickerDialog {
 
         TimePicker mTimePicker;
-        private taskOnTimeSetListener mTimeSetListener;
+        private TaskOnTimeSetListener mTimeSetListener;
         private EditText taskNote;
 
-        myTimePickerDialog(Context context, int themeResId, taskOnTimeSetListener listener,
-                           int hourOfDay, int minute, boolean is24HourView) {
+        CustomizedTimePickerDialog(Context context, int themeResId, TaskOnTimeSetListener listener,
+                                   int hourOfDay, int minute, boolean is24HourView) {
             super(context, themeResId, listener, hourOfDay, minute, is24HourView);
             final LayoutInflater inflater = LayoutInflater.from(context);
             mTimeSetListener = listener;
             final View view = inflater.inflate(R.layout.customized_time_picker, null);
+            setView(view);
             mTimePicker = view.findViewById(R.id.myTimePicker);
             taskNote = view.findViewById(R.id.task_note);
             mTimePicker.setIs24HourView(is24HourView);
             mTimePicker.setCurrentHour(hourOfDay);
             mTimePicker.setCurrentMinute(minute);
             mTimePicker.setOnTimeChangedListener(this);
-            setView(view);
         }
 
         @Override
@@ -374,45 +382,43 @@ public class HomeFragment extends Fragment {
         public void onClick(DialogInterface dialog, int which) {
             switch (which) {
                 case BUTTON_POSITIVE:
-                    // Note this skips input validation and just uses the last valid time and hour
-                    // entry. This will only be invoked programmatically. User clicks on BUTTON_POSITIVE
-                    // are handled in show().
-                    if (mTimeSetListener != null) {
-                        mTimeSetListener.setTaskNote(taskNote.getText().toString());
-                        mTimeSetListener.onTimeSet(mTimePicker, mTimePicker.getCurrentHour(),
-                                mTimePicker.getCurrentMinute());
-                    }
+                    mTimeSetListener.setTaskNote(taskNote.getText().toString());
+                    mTimeSetListener.onTimeSet(mTimePicker, mTimePicker.getCurrentHour(),
+                            mTimePicker.getCurrentMinute());
                     break;
                 case BUTTON_NEGATIVE:
+                    mTimeSetListener.abortTask();
                     cancel();
                     break;
             }
         }
     }
 
-    class workingTaskOnClickListener implements View.OnClickListener {
+    class WorkingTaskOnClickListener implements View.OnClickListener {
 
         TaskItem taskItem;
 
-        workingTaskOnClickListener(TaskItem taskItem) {
+        WorkingTaskOnClickListener(TaskItem taskItem) {
             this.taskItem = taskItem;
         }
         @Override
         public void onClick(View view) {
             float timeAdded = TimeUtils.millisToHour(System.currentTimeMillis() - homeContext.getTaskStartTime(taskItem.getId()));
-            TimePickerDialog timePickerDialog = new myTimePickerDialog(getContext(), R.style.HoloDialog,
-                    new taskOnTimeSetListener(taskItem), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
+            TimePickerDialog timePickerDialog = new CustomizedTimePickerDialog(getContext(), R.style.HoloDialog,
+                    new TaskOnTimeSetListener(taskItem), TimeUtils.getHour(timeAdded), TimeUtils.getMinute(timeAdded), true);
             timePickerDialog.setTitle(taskItem.getTaskName());
             timePickerDialog.show();
+            timePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setText(getResources().getString(R.string.task_abort));
+            timePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setBackgroundColor(Color.RED);
         }
     }
 
-    class displayTimerOnView implements Runnable {
+    class DisplayTimerOnView implements Runnable {
 
         int taskId;
         private HomeFragmentContext homeFragmentContext;
 
-        displayTimerOnView(int taskId, HomeFragmentContext homeFragmentContext) {
+        DisplayTimerOnView(int taskId, HomeFragmentContext homeFragmentContext) {
             this.taskId = taskId;
             this.homeFragmentContext = homeFragmentContext;
         }

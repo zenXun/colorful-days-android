@@ -1,7 +1,6 @@
 package com.zhengxunw.colorfuldays;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -17,21 +16,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.zhengxunw.colorfuldays.calendar_module.CalendarFragment;
+import com.zhengxunw.colorfuldays.calendar.CalendarFragment;
 import com.zhengxunw.colorfuldays.commons.TaskSettingActivity;
-import com.zhengxunw.colorfuldays.commons.TimeUtils;
 import com.zhengxunw.colorfuldays.database.DatabaseConstants;
-import com.zhengxunw.colorfuldays.database.DatabaseHelper;
-import com.zhengxunw.colorfuldays.database.TaskItem;
-import com.zhengxunw.colorfuldays.database.TransactionItem;
-import com.zhengxunw.colorfuldays.stats_module.StatsFragment;
-import com.zhengxunw.colorfuldays.today_module.HomeFragment;
+import com.zhengxunw.colorfuldays.stats.StatsFragment;
+import com.zhengxunw.colorfuldays.today.HomeFragment;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     /**

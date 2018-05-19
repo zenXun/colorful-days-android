@@ -1,10 +1,9 @@
-package com.zhengxunw.colorfuldays.today_module;
+package com.zhengxunw.colorfuldays.today;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
-import android.util.SparseArray;
 import android.widget.TextView;
 
 import com.zhengxunw.colorfuldays.commons.Constants;
